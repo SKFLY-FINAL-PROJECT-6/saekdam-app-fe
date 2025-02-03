@@ -1,26 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; // Timer 사용을 위해 필요한 패키지
-import 'package:flutter_svg/flutter_svg.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Community App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -87,6 +66,7 @@ class _HomePageState extends State<HomeScreen> {
               ),
             ],
           ),
+          ///연결 ,아이콘 클릭했을 때
           actions: [
             IconButton(
               icon: const Icon(Icons.menu),
