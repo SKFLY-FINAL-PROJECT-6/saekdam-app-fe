@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async'; // Timer 사용을 위해 필요한 패키지
-
+import 'gallery.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -375,7 +375,13 @@ class _HomePageState extends State<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => GalleryScreen()),
+                                );
+
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: Colors.pinkAccent,
