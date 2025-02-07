@@ -12,7 +12,7 @@ class GalleryScreen extends StatefulWidget {
 class _GalleryScreenState extends State<GalleryScreen> {
   final ImagePicker _picker = ImagePicker();
   List<String> _images = [];  // List<String>으로 변경, 경로를 저장
-
+   // 저기서 다른 게시글 바로 갈 수 있게 밑에 한 5개정도 제목만 뜨게 안되나?리스트
   @override
   void initState() {
     super.initState();
