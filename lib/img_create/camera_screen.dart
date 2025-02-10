@@ -1,5 +1,5 @@
 import 'package:camera/camera.dart';
-import 'package:fly_ai_1/screen/confirm_photo_screen.dart';
+import 'package:fly_ai_1/img_create/confirm_photo_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/cameras.dart';
 

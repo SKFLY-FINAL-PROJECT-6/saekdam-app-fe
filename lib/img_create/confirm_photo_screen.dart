@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // import 'package:image_picker/image_picker.dart'; // XFile 사용
 import 'dart:io';
 
-import 'package:fly_ai_1/screen/prompt_input_screen.dart'; // File 사용
+import 'package:fly_ai_1/img_create/prompt_input_screen.dart'; // File 사용
 
 class ConfirmPhotoScreen extends StatelessWidget {
   List<XFile> imageFiles; // XFile 리스트 받기
