@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fly_ai_1/cameras.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,9 @@ void main() async {
   // 로그인 여부(또는 첫 실행 여부)를 불러옴
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('loggedIn') ?? false;
+
+  // 카메라를 사용하기 위해 카메라 초기화
+  await initCameras();
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
@@ -48,7 +52,7 @@ class MyApp extends StatelessWidget {
         // 텍스트 선택(드래그) 시 하이라이트/커서 색상도 바꿀 경우
         textSelectionTheme: const TextSelectionThemeData(
           cursorColor: Color(0xFFffb2d7),
-          selectionColor: Color(0xFFffb2d7),  // 드래그 영역
+          selectionColor: Color(0xFFffb2d7), // 드래그 영역
           selectionHandleColor: Color(0xFFffb2d7),
         ),
       ),

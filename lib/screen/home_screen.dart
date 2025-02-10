@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/constant/color.dart';
+import 'package:fly_ai_1/screen/camera_screen.dart';
 import 'dart:async'; // Timer 사용을 위해 필요한 패키지
 import 'package:fly_ai_1/screen/gallery.dart';
 import 'package:fly_ai_1/screen/community.dart';
@@ -115,7 +116,7 @@ class _HomePageState extends State<HomeScreen> {
                   child: PageView(
                     controller: controller,
                     children: [1, 2, 3, 4].map(
-                          (e) {
+                      (e) {
                         return Image.asset(
                           'asset/img/paint$e.jpg',
                           fit: BoxFit.cover,
@@ -168,7 +169,11 @@ class _HomePageState extends State<HomeScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        // AI 벽화 생성 버튼 눌렀을 때 로직
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CameraScreen(),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: pinkmain, // 분홍색
@@ -418,16 +423,15 @@ class _HomePageState extends State<HomeScreen> {
               MaterialPageRoute(builder: (context) => const GalleryScreen()),
             );
           }
-          if (index == 2){
-          // 갤러리 아이콘(인덱스 1) 눌렀을 때 GalleryScreen으로 이동
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Community()),
-          );
+          if (index == 2) {
+            // 갤러리 아이콘(인덱스 1) 눌렀을 때 GalleryScreen으로 이동
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Community()),
+            );
           }
           // 다른 인덱스별 동작도 필요하면 작성
         },
-
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
