@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:fly_ai_1/img_create/prompt_input_dialog.dart';
 // import 'package:image_picker/image_picker.dart'; // XFile 사용
 import 'dart:io';
 
@@ -67,8 +68,7 @@ class ConfirmPhotoScreen extends StatelessWidget {
                         onPressed: () {
                           // 이미지 리스트 초기화
                           imageFiles = [];
-                          print(
-                              '====================출력출력출력출력출력onPressed출력출력출력=======================');
+                          // print('====================출력출력출력출력출력onPressed출력출력출력=======================');
 
                           Navigator.pop(context, []);
                         },
@@ -81,7 +81,7 @@ class ConfirmPhotoScreen extends StatelessWidget {
                           //   width: 1.0,
                           // ),
                         ),
-                        child: Text('다시 시도'),
+                        child: Text('다시 촬영'),
                       ),
                     ),
                     SizedBox(
@@ -89,14 +89,23 @@ class ConfirmPhotoScreen extends StatelessWidget {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => PromptInputScreen(
-                                imageFiles: imageFiles,
-                              ),
-                            ),
-                          );
+                          // Navigator.of(context).push(
+                          //   MaterialPageRoute(
+                          //     builder: (_) => PromptInputScreen(
+                          //       imageFiles: imageFiles,
+                          //     ),
+                          //   ),
+                          // );
                           // Navigator.pop(context, imageFiles);
+
+                          showDialog(
+                            // Dialog 바깥 부분을 눌러도 닫히지 않게 만듦
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (context) {
+                              return PromptInputDialog();
+                            },
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(255, 127, 189, 1.0),
