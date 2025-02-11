@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fly_ai_1/img_create/loading_screen.dart';
+import 'package:fly_ai_1/img_create/button/tag_toggle_button.dart';
 
 class PromptInputDialog extends StatefulWidget {
   const PromptInputDialog({super.key});
@@ -9,6 +9,129 @@ class PromptInputDialog extends StatefulWidget {
 }
 
 class _PromptInputDialogState extends State<PromptInputDialog> {
+  int stepIndex = 0;
+
+  // 각 페이지 별 프롬포트 입력에 대한 안내를 해주는 문구
+  final List<String> stepPromptDescription = [
+    '원하는 메인 테마를 선택해주세요.',
+    '원하는 분위기를 선택해주세요.',
+    '원하는 컬러를 선택해주세요.',
+    '추가 요청 사항을 작성해주세요.',
+  ];
+  final List<String> stepPromptTitles = [
+    '메인 테마',
+    '분위기',
+    '메인 컬러',
+    '',
+  ];
+
+  // TODO
+  // [ ]: 모달 페이지 별 태그 선택(isSelected) 상태를 다르게 구현해야함.
+  // 다음 버튼 클릭 시 처리
+  void _nextStep() {
+    if (stepIndex < stepPromptTitles.length - 1) {
+      setState(() {
+        stepIndex++;
+      });
+    } else {
+      // 마지막 단계라면 다이얼 로그 닫기
+      Navigator.pop(context);
+    }
+  }
+
+  // 이전 버튼 클릭 시 처리
+  void _prevStep() {
+    if (stepIndex > 0) {
+      setState(() {
+        stepIndex--;
+      });
+    }
+  }
+
+  // 각 모달 별 유저에게 입력받을 프롬프트의 내용을 위젯 형태로 작성
+  final Map<int, Widget> stepWidgets = {
+    0: Wrap(
+      spacing: 8.0,
+      children: [
+        TagToggleButton("바다"),
+        TagToggleButton("전통"),
+        TagToggleButton("학교"),
+        TagToggleButton("만화"),
+        TagToggleButton("놀이공원"),
+        TagToggleButton("동산"),
+      ],
+    ),
+    1: Wrap(
+      spacing: 8.0,
+      children: [
+        TagToggleButton("귀여운"),
+        TagToggleButton("멋진"),
+        TagToggleButton("활기찬"),
+        TagToggleButton("세련된"),
+        TagToggleButton("웅장한"),
+        TagToggleButton("신선한"),
+      ],
+    ),
+    2: Wrap(
+      spacing: 8.0,
+      children: [
+        TagToggleButton("빨강"),
+        TagToggleButton("노랑"),
+        TagToggleButton("초록"),
+        TagToggleButton("파랑"),
+        TagToggleButton("민트"),
+        TagToggleButton("핑크"),
+        TagToggleButton("강병민"),
+        TagToggleButton("흰색"),
+      ],
+    ),
+    3: TextFormField(
+      // TextField, TextFormField의 InputDecoration 속성 정리리
+      // https://velog.io/@mm723/%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94-textfield-decoration-%EC%A0%95%EB%A6%AC
+      decoration: InputDecoration(
+        labelText: 'Prompt',
+        labelStyle: TextStyle(
+          color: const Color.fromARGB(255, 31, 31, 31),
+        ),
+        fillColor: Colors.white,
+        // 포커스 됐을 때 색 변경
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Color.fromRGBO(22, 188, 136, 1),
+          ),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            style: BorderStyle.solid,
+          ),
+        ),
+      ),
+      // 커서의 설정을 변경
+      cursorColor: const Color.fromARGB(255, 31, 31, 31),
+      validator: (val) {
+        if (val?.length == 0) {
+          return '프롬프트를 입력해주세요!';
+        } else {
+          return null;
+        }
+      },
+      keyboardType: TextInputType.multiline,
+      // 텍스트를 상단 정렬
+      textAlignVertical: TextAlignVertical.top,
+      // expands : TextFormField의 크기를 공간의 최대치로 고정하는 옵션
+      // expands의 값이 true라면 maxLines와 minLines는 무조건 null로 설정해야함
+      // expands: true,
+      // 자동 줄바꿈 허용
+      maxLines: null,
+      // 최소 1줄 보이도록 설정(default값 : 1, minLines > 0)
+      minLines: 2,
+      style: TextStyle(
+        fontFamily: 'Poppins',
+      ),
+    ),
+  };
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -38,11 +161,11 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                 ),
               ),
 
-              // 유저 행동 유도도
+              // 스텝 설명
               SizedBox(
                 width: double.infinity,
                 child: Text(
-                  '원하는 태그를 선택해주세요.',
+                  stepPromptDescription[stepIndex],
                   style: TextStyle(
                     fontSize: 14,
                   ),
@@ -54,8 +177,9 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
               // 입력 프롬프트 설명
               SizedBox(
                 width: double.infinity,
+                height: 30,
                 child: Text(
-                  '메인 테마',
+                  stepPromptTitles[stepIndex],
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -66,18 +190,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
               // 태그 목록
               SizedBox(
                 width: double.infinity,
-                child: Wrap(
-                  spacing: 8.0,
-                  children: [
-                    TagButton("Nature"),
-                    TagButton("Abstract"),
-                    TagButton("Fantasy"),
-                    TagButton("Loren"),
-                    TagButton("Ipsum"),
-                    TagButton("Loren"),
-                    TagButton("Ipsum"),
-                  ],
-                ),
+                child: stepWidgets[stepIndex],
               ),
 
               // 공백
@@ -85,9 +198,10 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
 
               // 실선
               SizedBox(
-                  width: double.infinity,
-                  child: Divider(
-                      color: Color.fromRGBO(229, 231, 235, 1), thickness: 1.5)),
+                width: double.infinity,
+                child: Divider(
+                    color: Color.fromRGBO(229, 231, 235, 1), thickness: 1.5),
+              ),
 
               // 공백
               const SizedBox(height: 5),
@@ -100,16 +214,19 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                 children: [
                   Expanded(
                     child: DialogStepButton(
-                      direction: '취소',
-                      onPressed: () {},
+                      direction: stepIndex == 0 ? '취소' : '이전',
+                      onPressed: () {
+                        _prevStep();
+                      },
                     ),
                   ),
                   // SizedBox(width: 12),
                   Expanded(
                     child: DialogStepButton(
-                      direction: '다음',
+                      direction:
+                          stepIndex < stepPromptTitles.length - 1 ? '다음' : '완료',
                       onPressed: () {
-                        print('fdsafadsfadsfadsf');
+                        _nextStep();
                       },
                     ),
                   ),
@@ -123,49 +240,8 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   }
 }
 
-// 태그 선택 버튼
-class TagButton extends StatefulWidget {
-  // buttonText는 한 번 정해지면 바뀔 일이 없으니 final로 지정
-  final String buttonText;
-
-  const TagButton(this.buttonText, {super.key});
-
-  @override
-  State<TagButton> createState() => _TagButtonState();
-}
-
-class _TagButtonState extends State<TagButton> {
-  bool isSelected = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          isSelected = !isSelected;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isSelected ? Color.fromRGBO(22, 188, 136, 1) : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      ),
-      child: Text(
-        widget.buttonText,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Color.fromRGBO(22, 188, 136, 1),
-        ),
-      ),
-    );
-  }
-}
-
 // Dialog의 스텝 버튼
-// '다음' 혹은 '완료'이면 초록 배경에 흰 글씨, 그 외(취소 혹은 뒤로)면 흰 배경에 초록 글씨/외곽선선
-class DialogStepButton extends StatefulWidget {
+class DialogStepButton extends StatelessWidget {
   // 버튼 안에 들어갈 글자 ('다음', '완료', '이전', '취소')
   final String direction;
   // 버튼을 눌렀을 때의 작업을 콜백 함수로 받아옴
@@ -175,31 +251,26 @@ class DialogStepButton extends StatefulWidget {
       {required this.direction, required this.onPressed, super.key});
 
   @override
-  State<DialogStepButton> createState() => _DialogStepButtonState();
-}
-
-class _DialogStepButtonState extends State<DialogStepButton> {
-  @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-      onPressed: widget.onPressed,
+      onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        backgroundColor: (widget.direction == '다음' || widget.direction == '완료')
+        backgroundColor: (direction == '다음' || direction == '완료')
             ? Color.fromRGBO(22, 188, 136, 1)
             : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
         side: BorderSide(
-          color: (widget.direction == '다음' || widget.direction == '완료')
+          color: (direction == '다음' || direction == '완료')
               ? Color.fromRGBO(22, 188, 136, 1)
               : Color.fromRGBO(229, 231, 235, 1),
         ),
       ),
       child: Text(
-        widget.direction,
+        direction,
         style: TextStyle(
-            color: (widget.direction == '다음' || widget.direction == '완료')
+            color: (direction == '다음' || direction == '완료')
                 ? Colors.white
                 : Color.fromRGBO(22, 188, 136, 1)),
       ),
