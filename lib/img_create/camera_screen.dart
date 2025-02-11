@@ -1,3 +1,8 @@
+/*
+
+이제 사용하지 않을 예정
+image_picker의 카메라/갤러리 기능을 이용하여 벽화 사진을 가져오도록 할 예정
+
 import 'package:camera/camera.dart';
 import 'package:fly_ai_1/img_create/confirm_photo_screen.dart';
 import 'package:flutter/material.dart';
@@ -177,3 +182,5 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 }
+
+*/

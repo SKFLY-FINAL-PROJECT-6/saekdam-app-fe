@@ -1,3 +1,8 @@
+/*
+
+이제 사용하지 않을 예정
+image_picker의 카메라/갤러리 기능을 이용하여 벽화 사진을 가져오도록 할 예정
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/img_create/prompt_input_dialog.dart';
@@ -9,7 +14,7 @@ import 'package:fly_ai_1/img_create/prompt_input_screen.dart'; // File 사용
 class ConfirmPhotoScreen extends StatelessWidget {
   List<XFile> imageFiles; // XFile 리스트 받기
 
-  ConfirmPhotoScreen({required this.imageFiles, Key? key}) : super(key: key);
+  ConfirmPhotoScreen({required this.imageFiles, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +27,9 @@ class ConfirmPhotoScreen extends StatelessWidget {
       */
       canPop: false,
       // 뒤로가기 시 실행되는 메소드
-      // canPop이 true이든 false이든 onPopInvokedWithResult는 반드시 실행됨.
+      // canPop이 true이든 false이든 onPop InvokedWithResult는 반드시 실행됨.
       // didPop은 canPop의 값을 가져옴(bool)
       onPopInvokedWithResult: (didPop, result) async {
-        // print(didPop);
-        // print(
-        //     '====================출력출력출력출력출력onPopInvokedWithResult출력출력출력=======================');
-
         // 뒤로가기를 누를 시에도 사진을 다시 촬영하도록 함
         imageFiles = [];
         Navigator.pop(context, []);
@@ -124,3 +125,4 @@ class ConfirmPhotoScreen extends StatelessWidget {
     );
   }
 }
+*/

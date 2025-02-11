@@ -1,102 +1,48 @@
-import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'dart:io';
+import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
+import 'package:fly_ai_1/img_create/prompt_input_dialog.dart';
 
-class PromptInputScreen extends StatelessWidget {
-  List<XFile> imageFiles;
+// 화면 로딩 시 바로 showDialog를 실행하기 위해 statefulWidget으로 선언
+class PromptInputScreen extends StatefulWidget {
+  XFile? image;
 
-  PromptInputScreen({required this.imageFiles, Key? key}) : super(key: key);
+  PromptInputScreen({this.image, super.key});
+
+  @override
+  State<PromptInputScreen> createState() => _PromptInputScreenState();
+}
+
+// TODO : 뒤로가기를 누를 시에 대한 작동(HomeScreen으로 돌아가기) 구현하기기
+class _PromptInputScreenState extends State<PromptInputScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showMyDialog();
+    });
+  }
+
+  void _showMyDialog() {
+    showDialog(
+      // Dialog 바깥 부분을 눌러도 닫히지 않게 만듦
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return PromptInputDialog();
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: () {
-          // 빈 화면 탭 시 키보드 내리기
-          FocusScope.of(context).unfocus();
-        },
-        child: Container(
-          padding: EdgeInsets.all(30.0),
-          color: Colors.white,
-          child: Center(
-            child: ListView(
-              // 높이 계산 오류 방지
-              shrinkWrap: true,
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: imageFiles.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.file(
-                            File(imageFiles[index].path)), // XFile → File 변환
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(
-                  height: 30.0,
-                ),
-                Text('프롬포트 입력'),
-                SizedBox(
-                  height: 5.0,
-                ),
-                SizedBox(
-                  height: 240.0,
-                  child: TextFormField(
-                    // TextField, TextFormField의 InputDecoration 속성 정리리
-                    // https://velog.io/@mm723/%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94-textfield-decoration-%EC%A0%95%EB%A6%AC
-                    decoration: InputDecoration(
-                      labelText: 'Prompt',
-                      labelStyle: TextStyle(
-                        color: const Color.fromARGB(255, 31, 31, 31),
-                      ),
-                      fillColor: Colors.white,
-                      // hoverColor: Color.fromRGBO(137, 220, 224, 1.0),
-                      // focusColor: Color.fromRGBO(137, 220, 224, 1.0),
-                      // 포커스 됐을 때 색 변경
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color.fromRGBO(137, 220, 224, 1.0),
-                        ),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                          style: BorderStyle.solid,
-                        ),
-                      ),
-                    ),
-                    // 커서의 설정을 변경
-                    cursorColor: const Color.fromARGB(255, 31, 31, 31),
-                    validator: (val) {
-                      if (val?.length == 0) {
-                        return '프롬프트를 입력해주세요!';
-                      } else {
-                        return null;
-                      }
-                    },
-                    keyboardType: TextInputType.multiline,
-                    // 텍스트를 상단 정렬
-                    textAlignVertical: TextAlignVertical.top,
-                    // expands : TextFormField의 크기를 공간의 최대치로 고정하는 옵션
-                    // expands의 값이 true라면 maxLines와 minLines는 무조건 null로 설정해야함
-                    // expands: true,
-                    // 자동 줄바꿈 허용
-                    maxLines: null,
-                    // 최소 1줄 보이도록 설정(default값 : 1, minLines > 0)
-                    minLines: 2,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      backgroundColor: Colors.black,
+      body: Center(
+        child: widget.image != null
+            ? Image.file(File(widget.image!.path))
+            : Text('이미지 없음'),
       ),
     );
   }
