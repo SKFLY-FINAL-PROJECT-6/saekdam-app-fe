@@ -42,9 +42,11 @@ class _GalleryScreenState extends State<GalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: AppBar(
+          backgroundColor: Colors.white,
           elevation: 0,
           title: null,
           centerTitle: false,
@@ -63,7 +65,6 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     const Text(
                       ':Gallery',
                       style: TextStyle(
-                        fontFamily: 'sunflower',
                         fontSize: 16,
                         color: Colors.grey,
                       ),

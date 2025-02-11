@@ -4,11 +4,12 @@ import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fly_ai_1/login/welcome.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 로그인 여부(또는 첫 실행 여부)를 불러옴
+  await Firebase.initializeApp();
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('loggedIn') ?? false;
 
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // TextField 전역 스타일
         inputDecorationTheme: InputDecorationTheme(

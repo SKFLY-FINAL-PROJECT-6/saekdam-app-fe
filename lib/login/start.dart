@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/login/loginpage.dart';
+import 'package:fly_ai_1/screen/home_screen.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({Key? key}) : super(key: key);
