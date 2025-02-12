@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/login/start.dart';
 import 'package:fly_ai_1/login/loginpage.dart';
+import 'package:fly_ai_1/screen/home_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);

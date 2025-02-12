@@ -64,7 +64,7 @@ class _HomePageState extends State<HomeScreen> {
             RichText(
               text: const TextSpan(
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
                 children: <TextSpan>[
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomeScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: SizedBox(
-                  height: 250,
+                  height: 220,
                   child: PageView(
                     controller: controller,
                     children: [1, 2, 3, 4].map(
@@ -159,14 +159,14 @@ class _HomePageState extends State<HomeScreen> {
                   const Text(
                     '맞춤형 디자인을 생성해 보세요!',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 52,
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).push(
@@ -185,7 +185,7 @@ class _HomePageState extends State<HomeScreen> {
                         'AI 벽화 생성',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 20,
                         ),
                       ),
                     ),
@@ -226,7 +226,7 @@ class _HomePageState extends State<HomeScreen> {
             ),
 
             // ------------------------------------------------
-            // (4) Community 카드들 - 스크린샷처럼 2개
+            // (4) Community 카드
             // ------------------------------------------------
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -314,8 +314,6 @@ class _HomePageState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-
-                  // 두 번째 카드
                   Container(
                     height: 120,
                     margin: const EdgeInsets.only(bottom: 12),
@@ -332,14 +330,14 @@ class _HomePageState extends State<HomeScreen> {
                     ),
                     child: Row(
                       children: [
-                        // 예시 풍경 이미지
+                        // 예시 고양이 이미지
                         ClipRRect(
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(12),
                             bottomLeft: Radius.circular(12),
                           ),
                           child: Image.asset(
-                            'asset/img/image_1.jpg',
+                            'asset/img/wall_1.jpg',
                             width: 120,
                             height: 120,
                             fit: BoxFit.cover,
@@ -357,7 +355,7 @@ class _HomePageState extends State<HomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text(
-                                  'Skt fly ai',
+                                  '보라매 벽화 봉사자 모집',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -438,11 +436,11 @@ class _HomePageState extends State<HomeScreen> {
             label: '홈화면',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.view_in_ar),
+            icon: Icon(Icons.photo_library),
             label: '갤러리',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
+            icon: Icon(Icons.forum),
             label: '게시판',
           ),
         ],
