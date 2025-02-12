@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/constant/color.dart';
-import 'package:fly_ai_1/img_create/camera_screen.dart';
 import 'package:fly_ai_1/img_create/photo_capture_widget.dart';
 import 'dart:async'; // Timer 사용을 위해 필요한 패키지
 import 'package:fly_ai_1/screen/gallery.dart';
