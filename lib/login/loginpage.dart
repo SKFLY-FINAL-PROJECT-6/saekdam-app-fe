@@ -120,9 +120,10 @@ class _LoginPageState extends State<LoginPage> {
     UserCredential? userCredential = await _signInWithGoogle();
     if (userCredential != null) {
       // 구글 로그인 성공 시 HomeScreen으로 이동
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
       );
     } else {
       // 로그인 실패 혹은 취소된 경우 스낵바 메시지 출력
@@ -135,12 +136,14 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool fromLogout = ModalRoute.of(context)?.settings.arguments as bool? ?? false;
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: IconButton(
+        leading: (ModalRoute.of(context)?.settings.arguments as bool? ?? false)
+            ? null // 🔹 로그아웃을 통해 들어왔으면 뒤로가기 버튼 제거
+            : IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
@@ -282,30 +285,3 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-
-
-/// 구글 로그인 후 이동 로직
-/*
-void _login() async {
-  try {
-    final user = await _signInWithGoogle();
-    print('User data: $user'); // 반환 값 확인
-
-    if (mounted && user != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인 실패. 다시 시도해주세요.')),
-      );
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인 중 오류 발생: $e')),
-      );
-    }
-  }
-}*/
