@@ -13,7 +13,7 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('loggedIn') ?? false;
 
-  // 카메라를 사용하기 위해 카메라 초기화
+
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
