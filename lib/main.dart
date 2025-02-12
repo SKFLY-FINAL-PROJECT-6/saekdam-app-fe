@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fly_ai_1/cameras.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/img_create/photo_capture_widget.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
@@ -15,7 +14,6 @@ void main() async {
   final bool isLoggedIn = prefs.getBool('loggedIn') ?? false;
 
   // 카메라를 사용하기 위해 카메라 초기화
-  await initCameras();
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }

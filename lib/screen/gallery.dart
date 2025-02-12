@@ -1,9 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:fly_ai_1/api.dart'; // API 파일 import
 
 class GalleryScreen extends StatefulWidget {
-  const GalleryScreen({super.key});
+  const GalleryScreen({Key? key}) : super(key: key);
 
   @override
   _GalleryScreenState createState() => _GalleryScreenState();
@@ -11,42 +12,49 @@ class GalleryScreen extends StatefulWidget {
 
 class _GalleryScreenState extends State<GalleryScreen> {
   final ImagePicker _picker = ImagePicker();
-  List<String> _images = [];  // List<String>으로 변경, 경로를 저장
-   // 저기서 다른 게시글 바로 갈 수 있게 밑에 한 5개정도 제목만 뜨게 안되나?리스트
+  List<String> _images = [];
+
   @override
   void initState() {
     super.initState();
-    addImage("asset/img/paint1.jpg");
-    addImage("asset/img/paint2.jpg");  // asset 이미지를 경로로 추가
-    addImage("asset/img/paint3.jpg");  // asset 이미지를 경로로 추가
-    addImage("asset/img/paint4.jpg");  // asset 이미지를 경로로 추가
-// asset 이미지를 경로로 추가
+    _loadImages(); // 앱 실행 시 저장된 이미지와 asset 이미지 불러오기
   }
 
-  void addImage(String imagePath) {
+  // 저장된 이미지와 asset 이미지를 한 번에 불러오기
+  Future<void> _loadImages() async {
+    List<String> savedImages = await loadImagesFromLocalStorage();
+    List<String> assetImages = [
+      "asset/img/paint1.jpg",
+      "asset/img/paint2.jpg",
+      "asset/img/paint3.jpg",
+      "asset/img/paint4.jpg",
+    ];
+
     setState(() {
-      _images.add(imagePath);  // String으로 경로만 저장
+      // asset 이미지가 앞쪽에 오도록 합침
+      _images = [...assetImages, ...savedImages];
     });
   }
 
+  // 갤러리에서 이미지 선택 후 내부 저장소에 저장
   Future<void> _pickImage() async {
-    final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-    if (pickedFiles != null) {
+    final XFile? pickedFile =
+    await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      String savedPath =
+      await saveImageToLocalDirectory(File(pickedFile.path));
       setState(() {
-        _images.addAll(pickedFiles.map((file) => file.path));
+        _images.add(savedPath);
       });
     }
   }
-  //fasdfasffa
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: AppBar(
-          backgroundColor: Colors.white,
           elevation: 0,
           title: null,
           centerTitle: false,
@@ -65,10 +73,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     const Text(
                       ':Gallery',
                       style: TextStyle(
+                        fontFamily: 'sunflower',
                         fontSize: 16,
                         color: Colors.grey,
                       ),
-
                     ),
                   ],
                 ),
@@ -84,20 +92,22 @@ class _GalleryScreenState extends State<GalleryScreen> {
           crossAxisSpacing: 4,
           mainAxisSpacing: 4,
         ),
-        itemCount: _images.length,
+        // 모든 이미지를 표시하도록 itemCount를 _images.length로 설정
+        itemCount: _images.length-1,
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ImagePreviewScreen(image: _images[index]),
+                  builder: (context) =>
+                      ImagePreviewScreen(image: _images[index]),
                 ),
               );
             },
             child: _images[index].startsWith('asset')
-                ? Image.asset(_images[index], fit: BoxFit.cover) // asset 이미지
-                : Image.file(File(_images[index]), fit: BoxFit.cover), // 파일 이미지
+                ? Image.asset(_images[index], fit: BoxFit.cover)
+                : Image.file(File(_images[index]), fit: BoxFit.cover),
           );
         },
       ),
@@ -109,19 +119,22 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 }
 
+// 이미지 미리보기 화면
 class ImagePreviewScreen extends StatelessWidget {
-  final String image; // String으로 경로를 받음
-  const ImagePreviewScreen({super.key, required this.image});
+  final String image;
+  const ImagePreviewScreen({Key? key, required this.image}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: image.startsWith('asset')
-            ? Image.asset(image) // asset 이미지
-            : Image.file(File(image)), // 파일 이미지
+      body: Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: image.startsWith('asset')
+              ? Image.asset(image)
+              : Image.file(File(image)),
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/img_create/prompt_input_screen.dart';
+import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PhotoCaptureWidget extends StatefulWidget {
@@ -34,13 +35,15 @@ class _PhotoCaptureWidgetState extends State<PhotoCaptureWidget> {
           transitionDuration: Duration.zero,
           // 뒤로가기 애니메이션도 제거
           reverseTransitionDuration: Duration.zero,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            // 애니메이션 없이 바로 표시
-            return child;
-          },
+
         ),
       );
     }
+    else {
+      // 📌 사용자가 사진을 찍지 않고 뒤로 갔을 때 → 홈 화면으로 이동
+      Navigator.pop(context);
+    }
+
   }
 
   @override
@@ -53,6 +56,6 @@ class _PhotoCaptureWidgetState extends State<PhotoCaptureWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return HomeScreen();
   }
 }

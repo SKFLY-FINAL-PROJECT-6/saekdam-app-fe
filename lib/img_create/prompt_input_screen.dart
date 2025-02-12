@@ -26,11 +26,10 @@ class _PromptInputScreenState extends State<PromptInputScreen> {
 
   void _showMyDialog() {
     showDialog(
-      // Dialog 바깥 부분을 눌러도 닫히지 않게 만듦
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return PromptInputDialog();
+        return PromptInputDialog(imageFile: widget.image); // ✅ 이미지 전달
       },
     );
   }
