@@ -1,11 +1,16 @@
+/*
+
+이제 사용하지 않을 예정
+모달의 페이징을 제작하면서 구조가 너무 크게 바뀌었음
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
 
-class PromptInputScreen extends StatelessWidget {
+class PromptInputRegacy extends StatelessWidget {
   List<XFile> imageFiles;
 
-  PromptInputScreen({required this.imageFiles, Key? key}) : super(key: key);
+  PromptInputRegacy({required this.imageFiles, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -101,3 +106,5 @@ class PromptInputScreen extends StatelessWidget {
     );
   }
 }
+
+*/

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/constant/color.dart';
-import 'package:fly_ai_1/screen/camera_screen.dart';
+import 'package:fly_ai_1/img_create/camera_screen.dart';
+import 'package:fly_ai_1/img_create/photo_capture_widget.dart';
 import 'dart:async'; // Timer 사용을 위해 필요한 패키지
 import 'package:fly_ai_1/screen/gallery.dart';
 import 'package:fly_ai_1/screen/community.dart';
@@ -169,9 +170,12 @@ class _HomePageState extends State<HomeScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: () {
+                        // NOTE : 현재는 카메라로만 입력받음
+                        // 갤러리에서 사진을 가져오는 기능도 만들까?
+                        // 그렇게 정해지면 Modal 하나 더 만들어야겠다
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => CameraScreen(),
+                            builder: (_) => PhotoCaptureWidget(),
                           ),
                         );
                       },
