@@ -30,7 +30,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 child: Opacity(
                   opacity: 0.8,
                   child: Image.asset(
-                    'assets/images/wave_mint.png',
+                    'asset/img/wave_mint.png',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -43,13 +43,13 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 child: Opacity(
                   opacity: 1,
                   child: Image.asset(
-                    'assets/images/wave_pink.png',
+                    'asset/img/wave_pink.png',
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
               Image.asset(
-                'assets/images/droplet.png',
+                'asset/img/droplet.png',
                 width: 200,
                 height: 200,
                 fit: BoxFit.contain,

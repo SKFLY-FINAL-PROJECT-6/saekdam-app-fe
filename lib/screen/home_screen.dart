@@ -4,6 +4,7 @@ import 'package:fly_ai_1/img_create/photo_capture_widget.dart';
 import 'dart:async'; // Timer 사용을 위해 필요한 패키지
 import 'package:fly_ai_1/screen/gallery.dart';
 import 'package:fly_ai_1/screen/community.dart';
+import 'package:fly_ai_1/screen/menu.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,8 +50,8 @@ class _HomePageState extends State<HomeScreen> {
     return Scaffold(
       // 배경색을 연한 회색
       backgroundColor: Colors.grey[50],
-
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Row(
@@ -84,7 +85,12 @@ class _HomePageState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileSetting()),
+              );
+            },
           ),
         ],
       ),

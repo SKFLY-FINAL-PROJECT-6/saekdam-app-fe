@@ -16,6 +16,7 @@ class _StartPageState extends State<StartPage> {
   final _passController = TextEditingController();
   final _confirmController = TextEditingController();
 
+  String _userError = "";
   String _emailError = '';
   String _passwordError = '';
   String _confirmError = '';
@@ -31,11 +32,40 @@ class _StartPageState extends State<StartPage> {
     super.dispose();
   }
 
+  // 이름 검증
+  void _validateUser(String value) {
+    if (value.length < 2) {
+      setState(() {
+        _userError = '유저이름은 2글자 이상이어야 합니다.';
+      });
+    }
+    else if(value.length>5){
+      setState(() {
+        _userError = '유저이름은 5글자 이하여야 합니다.';
+      });
+    }
+    else {
+      setState(() {
+        _userError = '';
+      });
+    }
+    _checkFormValidity();
+  }
   // 이메일 검증
   void _validateEmail(String value) {
-    if (value.length < 8) {
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
+    if (value.length < 5) {
       setState(() {
-        _emailError = '이메일은 8자 이상이어야 합니다.';
+        _emailError = '이메일은 5글자 이상이어야 합니다.';
+      });
+    } else if (value.length > 50) {
+      setState(() {
+        _emailError = '이메일은 50글자 이하여야 합니다.';
+      });
+    } else if (!emailRegex.hasMatch(value)) {
+      setState(() {
+        _emailError = '이메일 형식이 아닙니다.';
       });
     } else {
       setState(() {
@@ -49,9 +79,15 @@ class _StartPageState extends State<StartPage> {
   void _validatePassword(String value) {
     if (value.length < 8) {
       setState(() {
-        _passwordError = '비밀번호는 8자 이상이어야 합니다.';
+        _passwordError = '비밀번호는 8글자 이상이어야 합니다.';
       });
-    } else {
+    }
+    else if(value.length>30){
+      setState(() {
+        _passwordError = '비밀번호는 30글자 이하여야 합니다.';
+      });
+    }
+    else {
       setState(() {
         _passwordError = '';
       });
@@ -149,11 +185,12 @@ class _StartPageState extends State<StartPage> {
               // (1) 이름 입력
               TextField(
                 controller: _nameController,
-                onChanged: (value) => _checkFormValidity(),
-                decoration: const InputDecoration(
+                onChanged: _validateUser,
+                decoration: InputDecoration(
                   labelText: '이름',
                   hintText: "이름을 입력하세요",
                   border: OutlineInputBorder(),
+                  errorText: _userError.isNotEmpty ? _userError : null,
                 ),
               ),
               const SizedBox(height: 20),
