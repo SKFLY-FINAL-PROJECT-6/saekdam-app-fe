@@ -1,39 +1,33 @@
 import 'package:flutter/material.dart';
 
 // 태그 선택 버튼
-class TagToggleButton extends StatefulWidget {
-  // buttonText는 한 번 정해지면 바뀔 일이 없으니 final로 지정
+class TagToggleButton extends StatelessWidget {
   final String buttonText;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  const TagToggleButton(this.buttonText, {super.key});
-
-  @override
-  State<TagToggleButton> createState() => _TagToggleButtonState();
-}
-
-class _TagToggleButtonState extends State<TagToggleButton> {
-  bool isSelected = false;
+  const TagToggleButton({
+    required this.buttonText,
+    required this.isSelected,
+    required this.onTap,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        setState(() {
-          isSelected = !isSelected;
-        });
-      },
+      onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isSelected ? Color.fromRGBO(22, 188, 136, 1) : Colors.white,
+        backgroundColor: isSelected ? Colors.lightBlueAccent : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       ),
       child: Text(
-        widget.buttonText,
+        buttonText,
         style: TextStyle(
-          color: isSelected ? Colors.white : Color.fromRGBO(22, 188, 136, 1),
+          color: isSelected ? Colors.white : Colors.black87,
         ),
       ),
     );

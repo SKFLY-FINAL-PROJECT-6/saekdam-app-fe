@@ -14,6 +14,7 @@ void main() async {
   final bool isLoggedIn = prefs.getBool('loggedIn') ?? false;
 
 
+
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
