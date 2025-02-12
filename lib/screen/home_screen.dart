@@ -436,11 +436,11 @@ class _HomePageState extends State<HomeScreen> {
             label: '홈화면',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.view_in_ar),
+            icon: Icon(Icons.photo_library),
             label: '갤러리',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
+            icon: Icon(Icons.forum),
             label: '게시판',
           ),
         ],

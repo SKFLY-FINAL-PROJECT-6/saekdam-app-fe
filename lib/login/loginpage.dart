@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /// 두 번째 코드에서 가져온 구글 로그인 로직
-  Future<UserCredential?> _signInWithGoogle() async {
+  Future<UserCredential> _signInWithGoogle() async {
     setState(() {
       _isLoading = true;
     });
@@ -84,11 +84,11 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
-        // 사용자가 로그인 취소
+        // 사용자가 로그인 창에서 취소한 경우 예외를 발생시킵니다.
         setState(() {
           _isLoading = false;
         });
-        return null;
+        throw Exception("사용자가 Google 로그인 과정을 취소했습니다.");
       }
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -110,34 +110,28 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _isLoading = false;
       });
-      return null;
+      // 에러 발생 시 null 대신 예외를 던집니다.
+      throw Exception("Google Sign-In 중 오류 발생: $e");
     }
   }
 
-  /// 구글 로그인 후 이동 로직
-  void _login() async {
-    try {
-      final user = await _signInWithGoogle();
-      print('User data: $user'); // 반환 값 확인
-
-      if (mounted && user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패. 다시 시도해주세요.')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 중 오류 발생: $e')),
-        );
-      }
+  /// 구글 로그인 버튼 눌렀을 때 실행되는 함수
+  Future<void> _login() async {
+    UserCredential? userCredential = await _signInWithGoogle();
+    if (userCredential != null) {
+      // 구글 로그인 성공 시 HomeScreen으로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      // 로그인 실패 혹은 취소된 경우 스낵바 메시지 출력
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Google 로그인에 실패했습니다.")),
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -287,3 +281,31 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+
+
+/// 구글 로그인 후 이동 로직
+/*
+void _login() async {
+  try {
+    final user = await _signInWithGoogle();
+    print('User data: $user'); // 반환 값 확인
+
+    if (mounted && user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인 실패. 다시 시도해주세요.')),
+      );
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인 중 오류 발생: $e')),
+      );
+    }
+  }
+}*/
