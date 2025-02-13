@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/img_create/prompt_input_dialog.dart';
+import 'package:fly_ai_1/img_create/masking.dart'; // ✅ 벽 마스킹 파일 import
 
 // 화면 로딩 시 바로 showDialog를 실행하기 위해 statefulWidget으로 선언
 class PromptInputScreen extends StatefulWidget {
@@ -20,19 +21,29 @@ class _PromptInputScreenState extends State<PromptInputScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showMyDialog();
+      _goToMaskingScreen();
     });
   }
+    void _goToMaskingScreen(){
+      if (widget.image != null){
+        Navigator.push(
 
-  void _showMyDialog() {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) {
-        return PromptInputDialog(imageFile: widget.image); // ✅ 이미지 전달
-      },
-    );
-  }
+          context,
+          MaterialPageRoute(builder: (context) => MaskingScreen(image: widget.image!),
+          ),
+        );
+    }}
+
+
+//  void _showMyDialog() {
+//    showDialog(
+//      barrierDismissible: false,
+//     context: context,
+//      builder: (context) {
+//        return PromptInputDialog(imageFile: widget.image); // ✅ 이미지 전달
+//      },
+//    );
+//  }
 
   @override
   Widget build(BuildContext context) {
