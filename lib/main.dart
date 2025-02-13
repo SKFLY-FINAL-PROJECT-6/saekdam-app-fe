@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fly_ai_1/login/welcome.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fly_ai_1/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,7 +60,7 @@ class MyApp extends StatelessWidget {
       ),
       // 이미 로그인 상태면 HomeScreen 바로 보여주고,
       // 아니면 WelcomeScreen 먼저 보여줌
-      home: isLoggedIn ? const HomeScreen() : const WelcomeScreen(),
+      home: isLoggedIn ? const HomeScreen() :  WelcomeScreen(),
       // home: HomeScreen(),
       // 필요 시 라우트 등록
       routes: {
