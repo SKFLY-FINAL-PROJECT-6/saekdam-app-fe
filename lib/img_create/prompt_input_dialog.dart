@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fly_ai_1/img_create/button/tag_toggle_button_widget.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:camera/camera.dart'; // ✅ 여기에 추가!
-import 'dart:io'; // ✅ File을 사용하려면 필요함!
+import 'dart:io';
+import 'package:fly_ai_1/splash_screen.dart';
+
+import 'package:fly_ai_1/splash_screen.dart'; // ✅ File을 사용하려면 필요함!
 
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
@@ -95,11 +98,11 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()), // ✅ 홈 화면 이동
+                      MaterialPageRoute(builder: (context) => SplashScreen()), // ✅ 홈 화면 이동
                           (route) => false, // ✅ 이전 화면 모두 제거
                     );
                   },
-                  child: Text("확인하고 홈으로"),
+                  child: Text("디자인 생성하기"),
                 ),
               ],
             );
