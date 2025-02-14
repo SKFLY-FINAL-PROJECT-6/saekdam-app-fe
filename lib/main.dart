@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
       ),
       // 이미 로그인 상태면 HomeScreen 바로 보여주고,
       // 아니면 WelcomeScreen 먼저 보여줌
-      home: isLoggedIn ? const HomeScreen() :  WelcomeScreen(),
+      home: isLoggedIn ? const HomeScreen() : const WelcomeScreen(),
       // home: HomeScreen(),
       // 필요 시 라우트 등록
       routes: {
