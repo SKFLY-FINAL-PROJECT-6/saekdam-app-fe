@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:fly_ai_1/constant/color.dart';
 // 태그 선택 버튼
 class TagToggleButton extends StatelessWidget {
   final String buttonText;
@@ -18,7 +18,7 @@ class TagToggleButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.lightBlueAccent : Colors.white,
+        backgroundColor: isSelected ? Color(0xff364F6B) : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),

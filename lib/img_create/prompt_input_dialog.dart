@@ -6,8 +6,8 @@ import 'dart:io'; // ✅ File을 사용하려면 필요함!
 
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
-
-  const PromptInputDialog({Key? key, this.imageFile}) : super(key: key);
+  final Map<String,dynamic> maskData;
+  const PromptInputDialog({Key? key, required this.imageFile, required this.maskData}) : super(key: key);
 
   @override
   State<PromptInputDialog> createState() => _PromptInputDialogState();
@@ -54,21 +54,62 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
         print("키워드를 선택해주세요!");
 
       }
-    } else if(stepIndex ==3) { // ✅ 4단계 (텍스트 입력)
+    } else if (stepIndex == 3) { // ✅ 4단계 (텍스트 입력)
       if (promptController.text.isNotEmpty) {
         setState(() {
           data['request'] = promptController.text;
         });
+
         print("최종 선택된 키워드: $data");
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()), // ✅ HomeScreen으로 이동
-              (route) => false, // ✅ 스택 초기화 (모든 이전 화면 삭제)
+
+        // ✅ 다이얼로그 띄우기 (현재 화면에서 요약 확인)
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("최종 선택 확인"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("🎨 테마: ${data['theme']}"),
+                  Text("🎭 분위기: ${data['mood']}"),
+                  Text("🌈 색상: ${data['color']}"),
+                  Text(
+                    "📝 추가 요청: ${ (data['request'] ?? '').length > 10
+                        ? data['request']!.substring(0, 10) + '...'
+                        : data['request'] ?? '' }",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // ✅ 다이얼로그 닫기 (홈 이동 안 함)
+                  },
+                  child: Text("수정하기"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomeScreen()), // ✅ 홈 화면 이동
+                          (route) => false, // ✅ 이전 화면 모두 제거
+                    );
+                  },
+                  child: Text("확인하고 홈으로"),
+                ),
+              ],
+            );
+          },
         );
       } else {
         print("추가 요청 사항을 입력해주세요!");
       }
     }
+
 
   }
 
@@ -127,11 +168,18 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
         decoration: InputDecoration(
           labelText: '추가 요청 사항을 입력해주세요!',
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color.fromRGBO(22, 188, 136, 1)),
+            borderSide: BorderSide(color: Colors.white),
           ),
           border: OutlineInputBorder(),
         ),
-        onChanged: (value) {
+        style: TextStyle(
+          color: Colors.white, // 입력된 텍스트 색상 변경 (예: 흰색)
+          fontSize: 12, // 폰트 크기 조정 (선택 사항)
+          fontWeight: FontWeight.w500, // 폰트 굵기 (선택 사항)
+          ),
+          minLines: 2,
+          maxLines: 9,
+          onChanged: (value) {
           setState(() {
             data['request'] = value;
           });
@@ -266,14 +314,14 @@ class DialogStepButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         backgroundColor: (direction == '다음' || direction == '완료')
-            ? Color.fromRGBO(22, 188, 136, 1)
+            ? Color(0xff364F6B)
             : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
         side: BorderSide(
           color: (direction == '다음' || direction == '완료')
-              ? Color.fromRGBO(22, 188, 136, 1)
+              ? Color(0xff364F6B)
               : Color.fromRGBO(229, 231, 235, 1),
         ),
       ),
