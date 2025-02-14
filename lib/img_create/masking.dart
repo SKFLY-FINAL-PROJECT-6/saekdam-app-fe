@@ -197,8 +197,8 @@ class _MaskingScreenState extends State<MaskingScreen> {
     final image = await decodeImageFromList(imageFile.readAsBytesSync());
     return Size(image.width.toDouble(), image.height.toDouble());
   }
-
   void _showPromptDialog() {
+    // 원본 좌표로 변환된 maskData 생성
     Map<String, dynamic> maskData = getScaledCoordinates(
       originalWidth: originalWidth,
       originalHeight: originalHeight,
@@ -206,6 +206,9 @@ class _MaskingScreenState extends State<MaskingScreen> {
       displayHeight: displayHeight,
     );
 
+
+
+   // debugCoordinates();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -217,6 +220,33 @@ class _MaskingScreenState extends State<MaskingScreen> {
       },
     );
   }
+
+  // 좌표 변환 올바른지 확인하는 디버깅 함수
+  //
+  // void debugCoordinates() {
+  //   // 스케일 계산
+  //   double scaleX = originalWidth / displayWidth;
+  //   double scaleY = originalHeight / displayHeight;
+  //
+  //   // 변환된 마스킹 좌표 계산
+  //   Map<String, dynamic> maskData = getScaledCoordinates(
+  //     originalWidth: originalWidth,
+  //     originalHeight: originalHeight,
+  //     displayWidth: displayWidth,
+  //     displayHeight: displayHeight,
+  //   );
+  //
+  //   print("=== Debug Coordinates Info ===");
+  //   print("Original Size: width: $originalWidth, height: $originalHeight");
+  //   print("Display Size: width: $displayWidth, height: $displayHeight");
+  //   print("Scale Factors: scaleX: $scaleX, scaleY: $scaleY");
+  //   print("Rect Position and Size (Display 기준):");
+  //   print("  rectLeft: $rectLeft, rectTop: $rectTop, rectWidth: $rectWidth, rectHeight: $rectHeight");
+  //   print("Scaled Mask Data (원본 기준):");
+  //   print("  X: ${maskData['x']}, Y: ${maskData['y']}");
+  //   print("  Width: ${maskData['width']}, Height: ${maskData['height']}");
+  // }
+
 
   Map<String, dynamic> getScaledCoordinates({
     required double originalWidth,

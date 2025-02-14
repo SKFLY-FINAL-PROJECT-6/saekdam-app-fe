@@ -333,7 +333,7 @@ class DialogStepButton extends StatelessWidget {
         style: TextStyle(
           color: (direction == '다음' || direction == '완료')
               ? Colors.white
-              : Color.fromRGBO(22, 188, 136, 1),
+              : Colors.black,
         ),
       ),
     );
