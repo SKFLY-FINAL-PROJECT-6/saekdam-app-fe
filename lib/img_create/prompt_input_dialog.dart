@@ -6,8 +6,8 @@ import 'dart:io'; // ✅ File을 사용하려면 필요함!
 
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
-  final List<Offset> maskPoints;
-  const PromptInputDialog({Key? key, required this.imageFile, required this.maskPoints}) : super(key: key);
+  final Map<String,dynamic> maskData;
+  const PromptInputDialog({Key? key, required this.imageFile, required this.maskData}) : super(key: key);
 
   @override
   State<PromptInputDialog> createState() => _PromptInputDialogState();

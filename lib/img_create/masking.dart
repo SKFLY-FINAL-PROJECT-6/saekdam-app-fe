@@ -13,8 +13,11 @@ class MaskingScreen extends StatefulWidget {
 }
 
 class _MaskingScreenState extends State<MaskingScreen> {
-  List<Offset> points = []; // 📌 사용자가 터치한 꼭짓점 저장
-  bool isErasing = false; // 📌 지우개 모드 ON/OFF
+  double rectLeft = 100;
+  double rectTop = 200;
+  double rectWidth = 200;
+  double rectHeight = 300;
+  bool isResizing = false; // 크기 조절 모드
 
   @override
   Widget build(BuildContext context) {
@@ -40,38 +43,57 @@ class _MaskingScreenState extends State<MaskingScreen> {
             ),
           ),
 
-          // 📌 벽을 선택할 수 있도록 마스킹 기능 추가
-          GestureDetector(
-            onTapDown: (details) {
-              RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-              if (renderBox != null) {
-                Offset localPosition = details.localPosition;
-
-                // ✅ 이미지의 위치와 크기 계산
-                double imageWidth = MediaQuery.of(context).size.width * 0.8;
-                double imageHeight = imageWidth * (File(widget.image.path).lengthSync() / imageWidth); // 비율 유지
-
-                Rect imageRect = Rect.fromCenter(
-                  center: Offset(MediaQuery.of(context).size.width / 2, MediaQuery.of(context).size.height / 2),
-                  width: imageWidth,
-                  height: imageHeight,
-                );
-
-                // ✅ 터치한 위치가 이미지 안에 있을 때만 추가
-                if (imageRect.contains(localPosition)) {
-                  setState(() {
-                    if (isErasing) {
-                      points.removeWhere((point) => (point - localPosition).distance < 20);
-                    } else {
-                      points.add(localPosition);
-                    }
-                  });
-                }
-              }
-            },
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: WallSelectionPainter(points),
+          // ✅ 직사각형 박스 (이동 및 크기 조절 가능)
+          Positioned(
+            left: rectLeft,
+            top: rectTop,
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                setState(() {
+                  if (isResizing) {
+                    // 크기 조절 모드
+                    rectWidth += details.delta.dx;
+                    rectHeight += details.delta.dy;
+                  } else {
+                    // 이동 모드
+                    rectLeft += details.delta.dx;
+                    rectTop += details.delta.dy;
+                  }
+                });
+              },
+              child: Stack(
+                children: [
+                  // ✅ 선택 박스
+                  Container(
+                    width: rectWidth,
+                    height: rectHeight,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 2),
+                      color: Colors.white.withOpacity(0.3),
+                    ),
+                  ),
+                  // ✅ 오른쪽 아래 크기 조절 핸들
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: GestureDetector(
+                      onPanStart: (_) => setState(() => isResizing = true),
+                      onPanEnd: (_) => setState(() => isResizing = false),
+                      onPanUpdate: (details) {
+                        setState(() {
+                          rectWidth += details.delta.dx;
+                          rectHeight += details.delta.dy;
+                        });
+                      },
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -88,18 +110,6 @@ class _MaskingScreenState extends State<MaskingScreen> {
                   icon: Icon(Icons.close, color: Colors.white, size: 30),
                   onPressed: () {
                     Navigator.pop(context);
-                  },
-                ),
-                // 지우개 모드 버튼
-                IconButton(
-                  icon: Icon(
-                      isErasing ? Icons.pan_tool_alt : Icons.auto_fix_normal,
-                      color: Colors.white,
-                      size: 30),
-                  onPressed: () {
-                    setState(() {
-                      isErasing = !isErasing;
-                    });
                   },
                 ),
               ],
@@ -119,28 +129,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
                 ),
               ),
               onPressed: () {
-                if (points.isNotEmpty) {
-                  _showPromptDialog();
-                } else {
-                  // ✅ 벽을 선택하지 않았을 때 경고창 띄우기
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("알림"),
-                        content: Text("벽을 선택해주세요!"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text("확인"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
+                _showPromptDialog();
               },
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
@@ -155,48 +144,40 @@ class _MaskingScreenState extends State<MaskingScreen> {
 
   // ✅ 다이얼로그 띄우기 (프롬프트 입력)
   void _showPromptDialog() {
+    Map<String, dynamic> maskData = getScaledCoordinates(
+      originalWidth: 1000, // 원본 이미지 크기 (예제)
+      originalHeight: 800,
+      targetWidth: 512,
+      targetHeight: 512,
+    );
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return PromptInputDialog(
           imageFile: widget.image,
-          maskPoints: points, // ✅ 꼭짓점 좌표 전달
+          maskData: maskData, // ✅ 변환된 좌표 전달
         );
       },
     );
   }
-}
 
-// ✅ 꼭짓점만 저장하고 UI에서 선을 이어서 보이게 하는 `WallSelectionPainter`
-class WallSelectionPainter extends CustomPainter {
-  final List<Offset> points;
+  // ✅ 비율 맞춰 좌표 변환
+  Map<String, dynamic> getScaledCoordinates({
+    required double originalWidth,
+    required double originalHeight,
+    required double targetWidth,
+    required double targetHeight,
+  }) {
+    double scaleX = targetWidth / originalWidth;
+    double scaleY = targetHeight / originalHeight;
 
-  WallSelectionPainter(this.points);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black//  반투명 검은색
-      ..style = PaintingStyle.stroke //  선을 그리는 스타일
-      ..strokeWidth = 2.5 //  선 두께 조절
-      ..strokeCap = StrokeCap.round; //  선 끝을 둥글게 처리
-
-    Path path = Path();
-
-    if (points.isNotEmpty) {
-      path.moveTo(points.first.dx, points.first.dy); //  첫 좌표에서 시작
-      for (int i = 1; i < points.length; i++) {
-        path.lineTo(points[i].dx, points[i].dy); //  꼭짓점을 이어줌
-      }
-    }
-
-    canvas.drawPath(path, paint); //  UI에서 선으로 보이게 하기
-    for (var point in points) {
-      canvas.drawCircle(point, 2.5, paint);
-    }
+    return {
+      "x": rectLeft * scaleX,
+      "y": rectTop * scaleY,
+      "width": rectWidth * scaleX,
+      "height": rectHeight * scaleY
+    };
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
