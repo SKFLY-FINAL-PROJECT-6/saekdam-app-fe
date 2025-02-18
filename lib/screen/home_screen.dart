@@ -5,7 +5,7 @@ import 'dart:async'; // Timer 사용을 위해 필요한 패키지
 import 'package:fly_ai_1/screen/gallery.dart';
 import 'package:fly_ai_1/screen/community.dart';
 import 'package:fly_ai_1/screen/menu.dart';
-
+import 'package:fly_ai_1/api.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -86,6 +86,7 @@ class _HomePageState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
+              fetchData();
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ProfileSetting()),

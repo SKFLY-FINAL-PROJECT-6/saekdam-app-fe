@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 // 📌 내부 저장소 경로 가져오기
 Future<String> getLocalStoragePath() async {
   final directory = await getApplicationDocumentsDirectory();
@@ -26,8 +27,30 @@ Future<List<String>> loadImagesFromLocalStorage() async {
   }
 
   final List<FileSystemEntity> files = directory.listSync();
+
   return files
       .whereType<File>() // 파일만 필터링
+      .where((file) => file.lengthSync() > 0) // 🔥 빈 파일 제거
       .map((file) => file.path) // 파일 경로 리스트로 변환
       .toList();
 }
+
+
+Future<void> fetchData() async {
+  // EC2 퍼블릭 IP 또는 도메인 (예: http://your-ec2-ip:port/endpoint)
+  final String url = "http://saekdam.kro.kr/api/actuator/health";
+
+  try {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("응답 데이터: $data");
+    } else {
+      print("오류 발생: ${response.statusCode}");
+    }
+  } catch (e) {
+    print("요청 실패: $e");
+  }
+}
+

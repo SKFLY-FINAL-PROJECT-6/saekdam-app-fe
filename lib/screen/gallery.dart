@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fly_ai_1/api.dart'; // API 파일 import
+import 'package:fly_ai_1/screen/imagepreview.dart'; // API 파일 import
 
 class GalleryScreen extends StatefulWidget {
   const GalleryScreen({Key? key}) : super(key: key);
@@ -34,6 +35,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
       // asset 이미지가 앞쪽에 오도록 합침
       _images = [...assetImages, ...savedImages];
     });
+    print("✅ 최종 이미지 리스트: $_images");
+
   }
 
   // 갤러리에서 이미지 선택 후 내부 저장소에 저장
@@ -93,7 +96,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           mainAxisSpacing: 4,
         ),
         // 모든 이미지를 표시하도록 itemCount를 _images.length로 설정
-        itemCount: _images.length-1,
+        itemCount: _images.length,
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
@@ -101,7 +104,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      ImagePreviewScreen(image: _images[index]),
+                      ImagePreviewScreen(
+                        images: _images, // 🔥 전체 이미지 리스트 넘김
+                        initialIndex: index, // 클릭한 이미지의 인덱스를 넘김
+                      ),
                 ),
               );
             },
@@ -118,24 +124,4 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 }
-
 // 이미지 미리보기 화면
-class ImagePreviewScreen extends StatelessWidget {
-  final String image;
-  const ImagePreviewScreen({Key? key, required this.image}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: image.startsWith('asset')
-              ? Image.asset(image)
-              : Image.file(File(image)),
-        ),
-      ),
-    );
-  }
-}

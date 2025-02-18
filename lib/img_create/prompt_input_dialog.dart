@@ -5,8 +5,6 @@ import 'package:camera/camera.dart'; // ✅ 여기에 추가!
 import 'dart:io';
 import 'package:fly_ai_1/splash_screen.dart';
 
-import 'package:fly_ai_1/splash_screen.dart'; // ✅ File을 사용하려면 필요함!
-
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
   final Map<String,dynamic> maskData;
