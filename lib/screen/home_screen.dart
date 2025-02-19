@@ -6,6 +6,8 @@ import 'package:fly_ai_1/screen/gallery.dart';
 import 'package:fly_ai_1/screen/community.dart';
 import 'package:fly_ai_1/screen/menu.dart';
 import 'package:fly_ai_1/api.dart';
+import 'package:fly_ai_1/screen/post_preview.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -86,7 +88,7 @@ class _HomePageState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
-              fetchData();
+
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ProfileSetting()),
@@ -238,7 +240,7 @@ class _HomePageState extends State<HomeScreen> {
             // ------------------------------------------------
             // (4) Community 카드
             // ------------------------------------------------
-            Padding(
+/*            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
@@ -409,6 +411,11 @@ class _HomePageState extends State<HomeScreen> {
               ),
             ),
 
+            const SizedBox(height: 30),*/
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: PostPreview(), // <-- 이렇게 바로 삽입
+            ),
             const SizedBox(height: 30),
           ],
         ),

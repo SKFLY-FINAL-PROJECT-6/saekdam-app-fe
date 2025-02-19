@@ -194,7 +194,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
       } else if (stepIndex == 1) {
         keywords = ["귀여운", "멋진", "활기찬", "세련된", "웅장한", "신선한"];
       } else if (stepIndex == 2) {
-        keywords = ["빨강", "노랑", "초록", "파랑", "민트", "핑크", "강병민", "흰색"];
+        keywords = ["빨강", "노랑", "초록", "파랑", "민트", "핑크", "주황", "흰색"];
       }
 
       return GridView.builder(

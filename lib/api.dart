@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'post.dart';
 // 📌 내부 저장소 경로 가져오기
 Future<String> getLocalStoragePath() async {
   final directory = await getApplicationDocumentsDirectory();
@@ -36,21 +37,28 @@ Future<List<String>> loadImagesFromLocalStorage() async {
 }
 
 
-Future<void> fetchData() async {
-  // EC2 퍼블릭 IP 또는 도메인 (예: http://your-ec2-ip:port/endpoint)
-  final String url = "http://saekdam.kro.kr/api/actuator/health";
+class ApiService {
+  static const String baseUrl = "http://saekdam.kro.kr/api";
 
-  try {
-    final response = await http.get(Uri.parse(url));
+  // 📌 게시글 목록 불러오기
+  static Future<List<Post>> fetchPosts() async {
+    final String url = "$baseUrl/posts";
 
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      print("응답 데이터: $data");
-    } else {
-      print("오류 발생: ${response.statusCode}");
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        // 🚀 한글 깨짐 방지 (UTF-8로 변환)
+        final String responseBody = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> jsonResponse = json.decode(responseBody);
+        final List<dynamic> postsJson = jsonResponse['content'];
+
+        return postsJson.map((json) => Post.fromJson(json)).toList();
+      } else {
+        throw Exception("게시글 데이터를 불러오는데 실패했습니다.");
+      }
+    } catch (e) {
+      throw Exception("API 요청 실패: $e");
     }
-  } catch (e) {
-    print("요청 실패: $e");
   }
 }
-
