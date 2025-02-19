@@ -254,6 +254,15 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        //kakao
+                        IconButton(
+                          icon: SvgPicture.asset(
+                            'asset/img/btn_kakao.svg',
+                            width: 50,
+                            height: 50,
+                          ),
+                          onPressed: _login, // 새로 정의한 함수로 교체
+                        ),
                         // Google
                         IconButton(
                           icon: SvgPicture.asset(

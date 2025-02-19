@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-final homeUrl = Uri.parse("https://www.skttechacademy.com/student/notice/noticeList");
+final homeUrl = Uri.parse("https://saekdam.kro.kr/board");
 class Community extends StatelessWidget {
   WebViewController controller = WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..loadRequest(homeUrl);
 
@@ -19,3 +19,5 @@ class Community extends StatelessWidget {
     );
   }
 }
+
+
