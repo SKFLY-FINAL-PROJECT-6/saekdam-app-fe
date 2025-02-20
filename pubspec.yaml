@@ -46,7 +46,7 @@ dependencies:
   toggle_switch: ^2.3.0
   flutter_animate: ^4.2.0
   http: ^0.13.5
-
+  flutter_exif_rotation: ^0.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

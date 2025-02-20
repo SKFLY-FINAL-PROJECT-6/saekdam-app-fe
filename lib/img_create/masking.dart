@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fly_ai_1/img_create/prompt_input_dialog.dart'; // ✅ 다이얼로그 파일 import
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 
 class MaskingScreen extends StatefulWidget {
   final XFile image; // 📌 카메라에서 받은 이미지
@@ -24,21 +25,30 @@ class _MaskingScreenState extends State<MaskingScreen> {
   double displayWidth = 0;
   double displayHeight = 0;
 
+  // 회전된 이미지 파일을 저장할 변수
+  File? rotatedImageFile;
+
   @override
   void initState() {
     super.initState();
     _loadImageSize();
   }
 
+  // EXIF 정보를 반영하여 이미지를 회전시킨 파일을 반환하는 함수
+  Future<File> _getRotatedImage() async {
+    return await FlutterExifRotation.rotateImage(path: widget.image.path);
+  }
+
   Future<void> _loadImageSize() async {
-    final imageFile = File(widget.image.path);
-    final imageSize = await _getImageSize(imageFile);
+    rotatedImageFile = await _getRotatedImage();
+    final imageSize = await _getImageSize(rotatedImageFile!);
 
     if (mounted) {
       setState(() {
         originalWidth = imageSize.width;
         originalHeight = imageSize.height;
 
+        // 화면의 80%를 사용하여 display 크기 결정
         double screenWidth = MediaQuery.of(context).size.width * 0.8;
         double screenHeight = MediaQuery.of(context).size.height * 0.8;
         double aspectRatio = originalWidth / originalHeight;
@@ -47,6 +57,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
           displayWidth = screenWidth;
           displayHeight = screenWidth / aspectRatio;
         } else {
+
           displayHeight = screenHeight;
           displayWidth = screenHeight * aspectRatio;
         }
@@ -54,9 +65,15 @@ class _MaskingScreenState extends State<MaskingScreen> {
     }
   }
 
+  // 이미지 파일의 크기를 측정하는 함수
+  Future<Size> _getImageSize(File imageFile) async {
+    final image = await decodeImageFromList(imageFile.readAsBytesSync());
+    return Size(image.width.toDouble(), image.height.toDouble());
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (originalWidth == 0 || originalHeight == 0) {
+    if (rotatedImageFile == null || originalWidth == 0 || originalHeight == 0) {
       return Scaffold(
         backgroundColor: Colors.black,
         body: Center(child: CircularProgressIndicator()),
@@ -67,21 +84,32 @@ class _MaskingScreenState extends State<MaskingScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          Container(color: Colors.black.withOpacity(0.5)),
-          Align(
-            alignment: Alignment.center,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.file(
-                File(widget.image.path),
-                width: displayWidth,
-                height: displayHeight,
-                fit: BoxFit.contain,
+          // 중앙에 이미지와 마스킹 박스가 포함된 컨테이너 배치
+          Center(
+            child: Container(
+              width: displayWidth,
+              height: displayHeight,
+              child: Stack(
+                children: [
+                  // 회전된 이미지를 ClipRRect로 둥글게 처리하여 표시
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.file(
+                      rotatedImageFile!,
+                      width: displayWidth,
+                      height: displayHeight,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  // 마스킹 박스
+                  _buildMaskingBox(),
+                ],
               ),
             ),
           ),
-          _buildMaskingBox(),
+          // 상단 닫기 버튼
           _buildTopBar(),
+          // 하단 완료 버튼
           _buildBottomButton(),
         ],
       ),
@@ -126,6 +154,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
                 color: Colors.white.withOpacity(0.3),
               ),
             ),
+            // 오른쪽 하단 크기 조절 핸들
             Positioned(
               right: 0,
               bottom: 0,
@@ -193,10 +222,6 @@ class _MaskingScreenState extends State<MaskingScreen> {
     );
   }
 
-  Future<Size> _getImageSize(File imageFile) async {
-    final image = await decodeImageFromList(imageFile.readAsBytesSync());
-    return Size(image.width.toDouble(), image.height.toDouble());
-  }
   void _showPromptDialog() {
     // 원본 좌표로 변환된 maskData 생성
     Map<String, dynamic> maskData = getScaledCoordinates(
@@ -206,9 +231,6 @@ class _MaskingScreenState extends State<MaskingScreen> {
       displayHeight: displayHeight,
     );
 
-
-
-   // debugCoordinates();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -221,33 +243,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
     );
   }
 
-  // 좌표 변환 올바른지 확인하는 디버깅 함수
-  //
-  // void debugCoordinates() {
-  //   // 스케일 계산
-  //   double scaleX = originalWidth / displayWidth;
-  //   double scaleY = originalHeight / displayHeight;
-  //
-  //   // 변환된 마스킹 좌표 계산
-  //   Map<String, dynamic> maskData = getScaledCoordinates(
-  //     originalWidth: originalWidth,
-  //     originalHeight: originalHeight,
-  //     displayWidth: displayWidth,
-  //     displayHeight: displayHeight,
-  //   );
-  //
-  //   print("=== Debug Coordinates Info ===");
-  //   print("Original Size: width: $originalWidth, height: $originalHeight");
-  //   print("Display Size: width: $displayWidth, height: $displayHeight");
-  //   print("Scale Factors: scaleX: $scaleX, scaleY: $scaleY");
-  //   print("Rect Position and Size (Display 기준):");
-  //   print("  rectLeft: $rectLeft, rectTop: $rectTop, rectWidth: $rectWidth, rectHeight: $rectHeight");
-  //   print("Scaled Mask Data (원본 기준):");
-  //   print("  X: ${maskData['x']}, Y: ${maskData['y']}");
-  //   print("  Width: ${maskData['width']}, Height: ${maskData['height']}");
-  // }
-
-
+  // 좌표 변환 (이미지의 좌측 상단 기준)
   Map<String, dynamic> getScaledCoordinates({
     required double originalWidth,
     required double originalHeight,
@@ -259,9 +255,9 @@ class _MaskingScreenState extends State<MaskingScreen> {
 
     return {
       "x": rectLeft * scaleX,
-      "y": (displayHeight - (rectTop + rectHeight)) * scaleY, // ✅ 좌표 변환 (왼쪽 하단 기준)
+      "y": rectTop * scaleY,
       "width": rectWidth * scaleX,
-      "height": rectHeight * scaleY
+      "height": rectHeight * scaleY,
     };
   }
 }
