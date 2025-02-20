@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/login/loginpage.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class StartPage extends StatefulWidget {
   const StartPage({Key? key}) : super(key: key);
@@ -125,14 +127,62 @@ class _StartPageState extends State<StartPage> {
   }
 
   // 가입 완료 버튼 클릭 시
-  void _onSignUp() {
-    if (_isSignUpEnabled) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginPage(), // 로그인 페이지로 이동
-        ),
+  Future<void> _onSignUp() async {
+    // 이미 _isSignUpEnabled로 폼 검증이 되어 있으니, 추가로 체크해도 좋습니다
+    if (!_isSignUpEnabled) return;
+
+    // 1) 입력값 정리
+    final username = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passController.text.trim();
+
+    // 로딩 스피너를 쓰고 싶다면
+    // setState(() { _isLoading = true; });
+
+    try {
+      // 2) 서버에 회원가입 요청
+      final uri = Uri.parse('https://saekdam.kro.kr/api/users');  // 실제 서버 URL
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
       );
+
+      // 3) 응답 처리
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // 성공 시, 서버에서 JSON으로 회원정보( id, email, ... )가 온다고 했으므로 파싱
+        final decoded = jsonDecode(utf8.decode(response.bodyBytes))
+        as Map<String, dynamic>;
+
+        // 예: 가입 완료 메시지
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('회원가입 성공!  환영합니다, ${decoded['username']} 님')),
+        );
+
+        // 4) 가입 성공 후 원하는 화면으로 이동(로그인 페이지로 이동 예시)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } else {
+        // 실패 시, {message, code, timestamp} 등 JSON 형태일 것이라 가정
+        final decoded = jsonDecode(utf8.decode(response.bodyBytes))
+        as Map<String, dynamic>;
+        final errorMessage = decoded['message'] ?? '회원가입 실패';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('오류 발생: $e')),
+      );
+    } finally {
+      // setState(() { _isLoading = false; });
     }
   }
 
