@@ -5,6 +5,10 @@ import 'package:fly_ai_1/login/start.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:convert';                         // JSON encode/decode
+import 'package:http/http.dart' as http;       // http 요청
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -15,10 +19,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final Map<String, String> _registeredUser = {
-    "email": "kbm20008",
-    "password": "pwd12345"
-  };
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -60,18 +60,59 @@ class _LoginPageState extends State<LoginPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (email == _registeredUser["email"] && password == _registeredUser["password"]) {
+    setState(() {
+      _isLoading = true; // 로딩 시작
+    });
+
+    try {
+      // 1) 서버로 로그인 요청
+      final uri = Uri.parse('https://saekdam.kro.kr/api/users/login'); // 실제 서버 주소
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      // 2) 응답 결과 확인
+      if (response.statusCode == 200) {
+        // 서버에서 JWT 문자열만 반환된다고 가정
+        final jwt = response.body;
+
+        // 3) shared_preferences에 저장
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', jwt);
+
+        // 4) 로그인 성공 안내
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인 성공!')),
+        );
+
+        // 5) 홈 화면으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        // 실패 시에는 {message, code, timestamp} 구조의 JSON이 온다고 가정
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> errorData = jsonDecode(decodedBody);
+        final errorMessage = errorData['message'] ?? '로그인 실패';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 성공!')),
+        SnackBar(content: Text('에러가 발생했습니다: $e')),
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이메일 또는 비밀번호가 일치하지 않습니다.')),
-      );
+    } finally {
+      setState(() {
+        _isLoading = false; // 로딩 해제
+      });
     }
   }
 
@@ -119,13 +160,20 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     UserCredential? userCredential = await _signInWithGoogle();
     if (userCredential != null) {
-      // 구글 로그인 성공 시 HomeScreen으로 이동
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
+      // 로그인 성공 메시지 띄우기
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('구글 로그인 성공!')),
       );
-    } else {
+
+      // 약간의 지연을 주고 HomeScreen으로 이동
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false,
+        );
+      });
+    }else {
       // 로그인 실패 혹은 취소된 경우 스낵바 메시지 출력
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Google 로그인에 실패했습니다.")),
@@ -133,6 +181,59 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  ///kakao 로그인
+  Future<void> _loginKakao() async {
+    setState(() => _isLoading = true);
+    try {
+      // 1) 서버에서 Kakao LoginUrl 가져오기
+      final loginUrl = await _fetchKakaoLoginUrl();
+      if (loginUrl == null) {
+        throw Exception("카카오 로그인 URL을 가져오지 못했습니다.");
+      }
+
+      // 2) 웹뷰 화면으로 이동 + 결과 받기
+      final loginResult = await Navigator.push<String?>(
+        context,
+        MaterialPageRoute(builder: (_) => KakaoWebViewPage(loginUrl: loginUrl)),
+      );
+
+      // 3) 웹뷰 닫힌 뒤, 결과가 'SUCCESS'라면 HomeScreen으로 이동
+      if (loginResult == 'SUCCESS') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('카카오 로그인 성공!')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false,
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('카카오 로그인 에러: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// 서버에서 loginUrl을 가져오는 함수
+  Future<String?> _fetchKakaoLoginUrl() async {
+    try {
+      final uri = Uri.parse('https://saekdam.kro.kr/api/auth/kakao/login');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        return decoded['loginUrl'] as String?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('fetchKakaoLoginUrl error: $e');
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +362,7 @@ class _LoginPageState extends State<LoginPage> {
                             width: 50,
                             height: 50,
                           ),
-                          onPressed: _login, // 새로 정의한 함수로 교체
+                          onPressed: _loginKakao,
                         ),
                         // Google
                         IconButton(
@@ -291,6 +392,85 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+}
+
+
+class KakaoWebViewPage extends StatefulWidget {
+  final String loginUrl;
+  const KakaoWebViewPage({Key? key, required this.loginUrl}) : super(key: key);
+
+  @override
+  State<KakaoWebViewPage> createState() => _KakaoWebViewPageState();
+}
+
+class _KakaoWebViewPageState extends State<KakaoWebViewPage> {
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (navReq) {
+            final url = navReq.url;
+            // 리다이렉트 감지
+            if (url.startsWith('https://saekdam.kro.kr/auth/oauth2/kakao/callback')) {
+              final uri = Uri.parse(url);
+              final code = uri.queryParameters['code'];
+              if (code != null) {
+                _fetchJwtWithCode(code);
+              }
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.loginUrl));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('카카오 로그인'),
+      ),
+      body: WebViewWidget(controller: _controller),
+    );
+  }
+
+  Future<void> _fetchJwtWithCode(String code) async {
+    try {
+      final uri = Uri.parse('https://saekdam.kro.kr/api/auth/oauth2/kakao/callback?code=$code');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final jwt = utf8.decode(response.bodyBytes);
+
+        // JWT 저장
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', jwt);
+
+        // 로그인 성공 → 웹뷰 닫으면서 'SUCCESS' 결과 전달
+        Navigator.pop(context, 'SUCCESS');
+      } else {
+        // 실패 시 메시지
+        final decoded = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        final errorMessage = decoded['message'] ?? '카카오 로그인 실패';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('카카오 JWT 발급 에러: $e')),
+      );
+    }
   }
 }
 
