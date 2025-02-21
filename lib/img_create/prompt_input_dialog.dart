@@ -25,20 +25,23 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
     "theme": null, // 1단계: 메인 테마
     "request": null // 2단계: 추가 요청 사항 (글 프롬프트)
   };
-  final List<String> stepPromptDescription = [
+  static const List<String> stepPromptDescription = [
     '원하는 메인 테마를 선택해주세요.',
     '추가 요청 사항을 작성해주세요.',
   ];
 
-  final List<String> stepPromptTitles = [
+  static const List<String> stepPromptTitles = [
     '메인 테마',
     '',
   ];
 
-  List<String?> selectedKeywords = [null, null, null, null];
+  // 입력받게될 프롬프트 총 개수
+  final totalPromptSteps = stepPromptTitles.length;
+
+  // List<String?> selectedKeywords = [null, null, null, null];
 
   void _nextStep() {
-    if (stepIndex < stepPromptTitles.length - 1) {
+    if (stepIndex < totalPromptSteps - 1) {
       // ✅ 0단계 (키워드 선택)
       if (stepIndex == 0 && data['theme'] != null) {
         setState(() {
@@ -47,7 +50,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
       } else {
         print("키워드를 선택해주세요!");
       }
-    } else if (stepIndex == stepPromptTitles.length - 1) {
+    } else if (stepIndex == totalPromptSteps - 1) {
       // ✅ 1단계 (프롬프트 입력)
       if (promptController.text.isNotEmpty) {
         setState(() {
@@ -150,7 +153,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   }
 
   Widget buildStepWidget(int stepIndex) {
-    if (stepIndex == stepPromptTitles.length - 1) {
+    if (stepIndex == totalPromptSteps - 1) {
       // ✅ 2단계 (텍스트 입력)
       return TextFormField(
         controller: promptController,
@@ -239,7 +242,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "${stepIndex + 1}/${stepPromptTitles.length}",
+                    "${stepIndex + 1}/$totalPromptSteps",
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
