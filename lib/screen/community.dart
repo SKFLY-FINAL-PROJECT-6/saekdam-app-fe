@@ -13,11 +13,9 @@ class Community extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-     ),
+      ),
       backgroundColor: Colors.white,
       body: WebViewWidget(controller: controller),
     );
   }
 }
-
-

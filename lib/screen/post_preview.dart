@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fly_ai_1/api.dart';
 import 'package:fly_ai_1/post.dart';
 import 'package:fly_ai_1/screen/community.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class PostPreview extends StatelessWidget {
   const PostPreview({Key? key}) : super(key: key);
@@ -19,17 +20,13 @@ class PostPreview extends StatelessWidget {
           return const Center(child: Text("게시글이 없습니다."));
         }
 
-        // 최신 2개 게시글만 가져오기
         final posts = snapshot.data!;
         final latestTwoPosts = posts.length >= 2 ? posts.take(2).toList() : posts;
 
         return Column(
           children: latestTwoPosts.map((post) {
-            // 💡 여기서는 샘플 이미지를 사용. 이미지가 없는 경우 placeholder로 처리
-            // UI는 주석 처리했던 카드 스타일로 작성
             return GestureDetector(
               onTap: () {
-                // 카드 클릭 시 상세 페이지 이동
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => Community()),
@@ -51,20 +48,53 @@ class PostPreview extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    // 왼쪽 미리보기 이미지 (예시)
+                    // 🔹 썸네일을 서버에서 불러오는 이미지
                     ClipRRect(
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(12),
                         bottomLeft: Radius.circular(12),
                       ),
-                      child: Image.asset(
-                        'asset/img/image_1.jpg', // 임시 이미지
+                      child: post.thumbnailUrl != null
+                          ? (post.thumbnailUrl!.endsWith('.svg') // 🔹 SVG 여부 확인
+                          ? SvgPicture.network(
+                        post.thumbnailUrl!,
+                        width: 120,
+                        height: 120,
+                        placeholderBuilder: (context) => const SizedBox(
+                          width: 120,
+                          height: 120,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      )
+                          : Image.network(
+                        post.thumbnailUrl!,
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'asset/img/색담이_rm.png',
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ))
+                          : Image.asset(
+                        'asset/img/색담이_rm.png', // 기본 이미지
                         width: 120,
                         height: 120,
                         fit: BoxFit.cover,
                       ),
                     ),
-                    // 오른쪽 정보
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -75,7 +105,6 @@ class PostPreview extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // 제목
                             Text(
                               post.title,
                               style: const TextStyle(
@@ -85,7 +114,6 @@ class PostPreview extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
-                            // 내용 (미리보기)
                             Text(
                               post.content,
                               style: const TextStyle(
@@ -95,7 +123,7 @@ class PostPreview extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 6),
-                            // 좋아요, 조회수 표시
+                            // 🔹 좋아요 & 댓글 수 추가 (조회수 → 댓글 수 변경됨)
                             Row(
                               children: [
                                 const Icon(
@@ -107,12 +135,12 @@ class PostPreview extends StatelessWidget {
                                 Text('${post.likes}'),
                                 const SizedBox(width: 10),
                                 const Icon(
-                                  Icons.remove_red_eye_outlined,
-                                  color: Color(0xFF6799FF),
+                                  Icons.comment_outlined,
+                                  color: Color(0xFF6799FF), // 💬 댓글 아이콘 색상
                                   size: 18,
                                 ),
                                 const SizedBox(width: 4),
-                                Text('${post.views}'),
+                                Text('${post.numOfComments}'), // 🔹 댓글 개수 표시
                               ],
                             ),
                           ],
