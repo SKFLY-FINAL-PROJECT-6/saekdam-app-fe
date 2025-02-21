@@ -36,11 +36,36 @@ Future<List<String>> loadImagesFromLocalStorage() async {
       .toList();
 }
 
-
 class ApiService {
-  static const String baseUrl = "http://saekdam.kro.kr/api";
+  static const String baseUrl = "https://saekdam.kro.kr/api";
 
-  // 📌 게시글 목록 불러오기
+  // 📌 여러 개의 썸네일 ID를 한 번에 URL로 변환 (POST 요청)
+  static Future<List<String>?> getThumbnailUrls(List<String> thumbnailIds) async {
+    final String url = "$baseUrl/storage/accessUrls";
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',  // JSON 요청
+        },
+        body: jsonEncode(thumbnailIds),  // 📌 리스트 형태로 변환하여 전송
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+        return jsonResponse.cast<String>(); // 🔹 JSON 리스트를 String 리스트로 변환
+      } else {
+        print("❌ 썸네일 요청 실패: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("❌ 썸네일 요청 중 오류: $e");
+      return null;
+    }
+  }
+
+  // 📌 게시글 목록 불러오기 (썸네일 URL 포함)
   static Future<List<Post>> fetchPosts() async {
     final String url = "$baseUrl/posts";
 
@@ -48,12 +73,28 @@ class ApiService {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        // 🚀 한글 깨짐 방지 (UTF-8로 변환)
         final String responseBody = utf8.decode(response.bodyBytes);
         final Map<String, dynamic> jsonResponse = json.decode(responseBody);
         final List<dynamic> postsJson = jsonResponse['content'];
 
-        return postsJson.map((json) => Post.fromJson(json)).toList();
+        // 모든 게시글의 썸네일 ID 리스트 추출
+        List<String> thumbnailIds = postsJson
+            .map((json) => json['thumbnail'] as String? ?? "") // ❗ null이면 빈 문자열("")로 유지
+            .toList();
+
+        // 📌 서버에서 썸네일 URL 리스트 가져오기 (POST 요청)
+        List<String>? thumbnailUrls = await getThumbnailUrls(thumbnailIds);
+
+        // 📌 Post 객체 생성 (썸네일 URL 추가)
+        List<Post> posts = [];
+        for (int i = 0; i < postsJson.length; i++) {
+          posts.add(Post.fromJson(postsJson[i],
+              thumbnailUrl: thumbnailUrls != null && i < thumbnailUrls.length
+                  ? thumbnailUrls[i]
+                  : null));
+        }
+
+        return posts;
       } else {
         throw Exception("게시글 데이터를 불러오는데 실패했습니다.");
       }
