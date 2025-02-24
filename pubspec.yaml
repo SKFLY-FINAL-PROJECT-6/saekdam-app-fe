@@ -47,6 +47,8 @@ dependencies:
   flutter_animate: ^4.2.0
   http: ^0.13.5
   flutter_exif_rotation: ^0.5.2
+  flutter_dotenv: ^5.2.1
+  web_socket_channel: ^3.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
