@@ -14,14 +14,17 @@ class SplashScreen extends StatelessWidget {
         children: [
           // GIF 이미지 표시
           Positioned(
-            top: 180,   // 화면 상단에서 200px 아래
-            left: 55,   // 화면 왼쪽에서 35px 오른쪽
-            child: Image.asset(
-              "asset/img/splash_screen_색담.gif",
-              width: 350, // GIF 크기 조정
-              height: 350,
-              fit: BoxFit.cover,
-            ).animate(),
+            top: 200, // 화면 상단에서 180px 아래
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Image.asset(
+                "asset/img/splash_screen_색담.gif",
+                width: 270, // GIF 크기 조정
+                height: 270,
+                fit: BoxFit.cover,
+              ).animate(),
+            ),
           ),
 
           // 예상 소요 시간 + 홈 화면 이동 버튼 (하단)
@@ -81,3 +84,110 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
+
+
+
+///상태에 따라 바뀌는 코드
+/*enum TaskProgress {
+  waiting,
+  inProgress,
+  completed,
+  failed,
+}
+
+class SplashScreen extends StatelessWidget {
+  final TaskProgress taskProgress; // 백엔드에서 전달받은 상태
+
+  const SplashScreen({super.key, required this.taskProgress});
+
+  // 상태에 따른 GIF 경로 반환
+  String _getGifPath() {
+    switch (taskProgress) {
+      case TaskProgress.waiting:
+        return "asset/img/waiting.gif";
+      case TaskProgress.inProgress:
+        return "asset/img/in_progress.gif";
+      case TaskProgress.completed:
+        return "asset/img/completed.gif";
+      case TaskProgress.failed:
+        return "asset/img/failed.gif";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // 상태에 따른 GIF 이미지 표시
+          Positioned(
+            top: 200,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Image.asset(
+                _getGifPath(), // 상태에 따른 경로 사용
+                width: 270,
+                height: 270,
+                fit: BoxFit.cover,
+              ).animate(),
+            ),
+          ),
+
+          // 하단의 예상 소요 시간과 홈 화면 이동 버튼
+          Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "예상 소요 시간: 약 3분",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // HomeScreen으로 이동
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: pinkmain,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        "홈 화면으로 이동",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}*/

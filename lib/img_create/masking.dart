@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fly_ai_1/img_create/prompt_input_dialog.dart'; // ✅ 다이얼로그 파일 import
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
+import 'package:fly_ai_1/img_create/prompt_input_dialog.dart'; // ✅ 다이얼로그 파일 import
 
 class MaskingScreen extends StatefulWidget {
   final XFile image; // 📌 카메라에서 받은 이미지
@@ -14,18 +14,18 @@ class MaskingScreen extends StatefulWidget {
 }
 
 class _MaskingScreenState extends State<MaskingScreen> {
-  double rectLeft = 100;
-  double rectTop = 200;
-  double rectWidth = 200;
-  double rectHeight = 300;
-  bool isResizing = false; // 크기 조절 모드
+  // 마스킹 박스 초기값
+  double rectLeft = 0;
+  double rectTop = 0;
+  double rectWidth = 200;   // 시작 크기 (임의)
+  double rectHeight = 200;  // 시작 크기 (임의)
+  bool isResizing = false;
 
   double originalWidth = 0;
   double originalHeight = 0;
   double displayWidth = 0;
   double displayHeight = 0;
 
-  // 회전된 이미지 파일을 저장할 변수
   File? rotatedImageFile;
 
   @override
@@ -34,11 +34,12 @@ class _MaskingScreenState extends State<MaskingScreen> {
     _loadImageSize();
   }
 
-  // EXIF 정보를 반영하여 이미지를 회전시킨 파일을 반환하는 함수
+  // EXIF 정보를 반영하여 이미지를 올바른 방향으로 회전시킨 파일 반환
   Future<File> _getRotatedImage() async {
     return await FlutterExifRotation.rotateImage(path: widget.image.path);
   }
 
+  // 이미지 크기 불러오기
   Future<void> _loadImageSize() async {
     rotatedImageFile = await _getRotatedImage();
     final imageSize = await _getImageSize(rotatedImageFile!);
@@ -48,24 +49,31 @@ class _MaskingScreenState extends State<MaskingScreen> {
         originalWidth = imageSize.width;
         originalHeight = imageSize.height;
 
-        // 화면의 80%를 사용하여 display 크기 결정
-        double screenWidth = MediaQuery.of(context).size.width * 0.8;
-        double screenHeight = MediaQuery.of(context).size.height * 0.8;
-        double aspectRatio = originalWidth / originalHeight;
+        // 화면 80% 범위 내에서 이미지 표시 크기 결정
+        final screenWidth = MediaQuery.of(context).size.width * 1;
+        final screenHeight = MediaQuery.of(context).size.height * 0.74;
+        final aspectRatio = originalWidth / originalHeight;
 
         if (aspectRatio > 1) {
+          // 가로가 더 긴 경우
           displayWidth = screenWidth;
           displayHeight = screenWidth / aspectRatio;
         } else {
-
+          // 세로가 더 긴 경우
           displayHeight = screenHeight;
           displayWidth = screenHeight * aspectRatio;
         }
+
+        // 마스킹 박스를 이미지 내부로 초기 배치 (왼쪽 상단 100x100 정도)
+        rectLeft = 0;
+        rectTop = 0;
+        rectWidth = 200;
+        rectHeight = 200;
       });
     }
   }
 
-  // 이미지 파일의 크기를 측정하는 함수
+  // 이미지 파일의 실제 크기 구하기
   Future<Size> _getImageSize(File imageFile) async {
     final image = await decodeImageFromList(imageFile.readAsBytesSync());
     return Size(image.width.toDouble(), image.height.toDouble());
@@ -73,10 +81,12 @@ class _MaskingScreenState extends State<MaskingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (rotatedImageFile == null || originalWidth == 0 || originalHeight == 0) {
+    if (rotatedImageFile == null ||
+        originalWidth == 0 ||
+        originalHeight == 0) {
       return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -84,22 +94,22 @@ class _MaskingScreenState extends State<MaskingScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 중앙에 이미지와 마스킹 박스가 포함된 컨테이너 배치
-          Center(
+          // --- (1) 이미지와 마스킹 박스를 "왼쪽 상단 정렬"로 배치 ---
+          Positioned(
+            left: 0,
+            top: 100,
             child: Container(
               width: displayWidth,
               height: displayHeight,
+              color: Colors.black, // 이미지 주변 배경색
               child: Stack(
                 children: [
-                  // 회전된 이미지를 ClipRRect로 둥글게 처리하여 표시
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.file(
-                      rotatedImageFile!,
-                      width: displayWidth,
-                      height: displayHeight,
-                      fit: BoxFit.contain,
-                    ),
+                  // 실제 이미지
+                  Image.file(
+                    rotatedImageFile!,
+                    width: displayWidth,
+                    height: displayHeight,
+                    fit: BoxFit.contain,
                   ),
                   // 마스킹 박스
                   _buildMaskingBox(),
@@ -107,9 +117,9 @@ class _MaskingScreenState extends State<MaskingScreen> {
               ),
             ),
           ),
-          // 상단 닫기 버튼
+          // --- (2) 상단 닫기 버튼 ---
           _buildTopBar(),
-          // 하단 완료 버튼
+          // --- (3) 하단 완료 버튼 ---
           _buildBottomButton(),
         ],
       ),
@@ -124,28 +134,40 @@ class _MaskingScreenState extends State<MaskingScreen> {
         onPanUpdate: (details) {
           setState(() {
             if (isResizing) {
+              // 크기 조절 모드
               double newWidth = rectWidth + details.delta.dx;
               double newHeight = rectHeight + details.delta.dy;
 
-              // ✅ 크기 제한: 박스가 이미지 밖으로 나가지 않도록 설정
-              if (newWidth > 50 && (rectLeft + newWidth) <= displayWidth) {
+              // 최소 0 이상, 최대 이미지 범위 내
+              if (newWidth >= 1 && (rectLeft + newWidth) <= displayWidth) {
                 rectWidth = newWidth;
               }
-              if (newHeight > 50 && (rectTop + newHeight) <= displayHeight) {
+              if (newHeight >= 1 && (rectTop + newHeight) <= displayHeight) {
                 rectHeight = newHeight;
               }
             } else {
+              // 이동 모드
               double newLeft = rectLeft + details.delta.dx;
               double newTop = rectTop + details.delta.dy;
 
-              // ✅ 이동 제한: 박스가 이미지 밖으로 이동하지 않도록 설정
-              rectLeft = newLeft.clamp(0, displayWidth - rectWidth);
-              rectTop = newTop.clamp(0, displayHeight - rectHeight);
+              // 이미지 영역 벗어나지 않게 clamp
+              if (newLeft < 0) newLeft = 0;
+              if (newTop < 0) newTop = 0;
+              if (newLeft + rectWidth > displayWidth) {
+                newLeft = displayWidth - rectWidth;
+              }
+              if (newTop + rectHeight > displayHeight) {
+                newTop = displayHeight - rectHeight;
+              }
+
+              rectLeft = newLeft;
+              rectTop = newTop;
             }
           });
         },
         child: Stack(
           children: [
+            // 마스킹 박스
             Container(
               width: rectWidth,
               height: rectHeight,
@@ -165,11 +187,10 @@ class _MaskingScreenState extends State<MaskingScreen> {
                   double newWidth = rectWidth + details.delta.dx;
                   double newHeight = rectHeight + details.delta.dy;
 
-                  // ✅ 크기 조절 제한 (이미지 내부 유지)
-                  if (newWidth > 50 && (rectLeft + newWidth) <= displayWidth) {
+                  if (newWidth >= 1 && (rectLeft + newWidth) <= displayWidth) {
                     setState(() => rectWidth = newWidth);
                   }
-                  if (newHeight > 50 && (rectTop + newHeight) <= displayHeight) {
+                  if (newHeight >= 1 && (rectTop + newHeight) <= displayHeight) {
                     setState(() => rectHeight = newHeight);
                   }
                 },
@@ -195,7 +216,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: Icon(Icons.close, color: Colors.white, size: 30),
+            icon: const Icon(Icons.close, color: Colors.white, size: 30),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -214,7 +235,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
         onPressed: _showPromptDialog,
-        child: Padding(
+        child: const Padding(
           padding: EdgeInsets.symmetric(vertical: 15),
           child: Text("완료", style: TextStyle(fontSize: 18, color: Colors.black)),
         ),
@@ -224,13 +245,8 @@ class _MaskingScreenState extends State<MaskingScreen> {
 
   void _showPromptDialog() {
     // 원본 좌표로 변환된 maskData 생성
-    Map<String, dynamic> maskData = getScaledCoordinates(
-      originalWidth: originalWidth,
-      originalHeight: originalHeight,
-      displayWidth: displayWidth,
-      displayHeight: displayHeight,
-    );
-
+    final Map<String, dynamic> maskData = getScaledCoordinates();
+    print("maskData: $maskData"); // 좌표값 콘솔 출력
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -243,21 +259,14 @@ class _MaskingScreenState extends State<MaskingScreen> {
     );
   }
 
-  // 좌표 변환 (이미지의 좌측 상단 기준)
-  Map<String, dynamic> getScaledCoordinates({
-    required double originalWidth,
-    required double originalHeight,
-    required double displayWidth,
-    required double displayHeight,
-  }) {
-    double scaleX = originalWidth / displayWidth;
-    double scaleY = originalHeight / displayHeight;
-
+  // --- (4) 좌표 변환: 현재 (0,0)이 "이미지의 왼쪽 상단" ---
+  Map<String, dynamic> getScaledCoordinates() {
     return {
-      "x": rectLeft * scaleX,
-      "y": rectTop * scaleY,
-      "width": rectWidth * scaleX,
-      "height": rectHeight * scaleY,
+      "x": rectLeft / displayWidth,
+      "y": rectTop / displayHeight,
+      "width": rectWidth / displayWidth,
+      "height": rectHeight / displayHeight,
     };
   }
+
 }
