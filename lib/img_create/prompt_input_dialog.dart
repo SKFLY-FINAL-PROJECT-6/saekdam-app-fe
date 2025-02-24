@@ -45,7 +45,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
     data = {
       "id": null,      // taskid (img uuid)
       "theme": null,   // 1단계: 메인 테마
-      "request": null, // 2단계: 추가 요청 사항 (글 프롬프트)
+      "requirement": null, // 2단계: 추가 요청 사항 (글 프롬프트)
       "x": widget.maskData["x"]?.toString(),
       "y": widget.maskData["y"]?.toString(),
       "w": widget.maskData["width"]?.toString(),
@@ -107,7 +107,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                     print(response.body);
                     String imgurl = await ApiService.getimgurl(data['id']!);
                     await ApiService.uploadImageToPresignedUrl(imgurl,savedImage!);
-                    _wsService.connect('0eebe056-c1cc-40a7-952a-c302ce942cb2');
+                    _wsService.connect(data['id']!);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
