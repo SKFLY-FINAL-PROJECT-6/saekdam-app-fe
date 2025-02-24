@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fly_ai_1/api.dart';
 import 'package:fly_ai_1/img_create/button/tag_toggle_button_widget.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:camera/camera.dart'; // ✅ 여기에 추가!
 import 'dart:io';
 import 'package:fly_ai_1/splash_screen.dart';
-
+import 'package:fly_ai_1/socket.dart';
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
   final Map<String, dynamic> maskData;
@@ -20,11 +21,11 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   int stepIndex = 0;
   TextEditingController promptController = TextEditingController();
   File? savedImage; // ✅ 저장할 이미지 변수
+  final WebSocketChannelService _wsService = WebSocketChannelService();
 
-  Map<String, String?> data = {
-    "theme": null, // 1단계: 메인 테마
-    "request": null // 2단계: 추가 요청 사항 (글 프롬프트)
-  };
+  // data 맵은 widget.maskData에 의존하므로 initState에서 초기화합니다.
+  late Map<String, String?> data;
+
   static const List<String> stepPromptDescription = [
     '원하는 메인 테마를 선택해주세요.',
     '추가 요청 사항을 작성해주세요.',
@@ -35,10 +36,24 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
     '',
   ];
 
-  // 입력받게될 프롬프트 총 개수
+  // 입력받게 될 프롬프트 총 개수
   final totalPromptSteps = stepPromptTitles.length;
 
-  // List<String?> selectedKeywords = [null, null, null, null];
+  @override
+  void initState() {
+    super.initState();
+    data = {
+      "id": null,      // taskid (img uuid)
+      "theme": null,   // 1단계: 메인 테마
+      "request": null, // 2단계: 추가 요청 사항 (글 프롬프트)
+      "x": widget.maskData["x"]?.toString(),
+      "y": widget.maskData["y"]?.toString(),
+      "w": widget.maskData["width"]?.toString(),
+      "h": widget.maskData["height"]?.toString(),
+    };
+    savedImage = File(widget.imageFile!.path);
+
+  }
 
   void _nextStep() {
     if (stepIndex < totalPromptSteps - 1) {
@@ -70,8 +85,6 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("🎨 테마: ${data['theme']}"),
-                  // Text("🎭 분위기: ${data['mood']}"),
-                  // Text("🌈 색상: ${data['color']}"),
                   Text(
                     "📝 추가 요청: ${(data['request'] ?? '').length > 10 ? data['request']!.substring(0, 10) + '...' : data['request'] ?? ''}",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -86,12 +99,20 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                   child: Text("수정하기"),
                 ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    data['id'] = await ApiService.fetchTaskId();
+                    final response = await ApiService.postTask(data);
+
+                    print("최종 선택된 키워드: $data");
+                    print(response.body);
+                    String imgurl = await ApiService.getimgurl(data['id']!);
+                    await ApiService.uploadImageToPresignedUrl(imgurl,savedImage!);
+                    _wsService.connect('0eebe056-c1cc-40a7-952a-c302ce942cb2');
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                           builder: (context) => SplashScreen()), // ✅ 홈 화면 이동
-                      (route) => false, // ✅ 이전 화면 모두 제거
+                          (route) => false, // ✅ 이전 화면 모두 제거
                     );
                   },
                   child: Text("디자인 생성하기"),
@@ -140,7 +161,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => HomeScreen()),
-                    (route) => false,
+                        (route) => false,
                   );
                 },
                 child: Text("확인"),
@@ -165,9 +186,9 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
           border: OutlineInputBorder(),
         ),
         style: TextStyle(
-          color: Colors.white, // 입력된 텍스트 색상 변경 (예: 흰색)
-          fontSize: 12, // 폰트 크기 조정 (선택 사항)
-          fontWeight: FontWeight.w500, // 폰트 굵기 (선택 사항)
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
         ),
         minLines: 2,
         maxLines: 9,
@@ -180,37 +201,27 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
     } else {
       // ✅ 0~2단계 (키워드 선택)
       List<String> keywords = [];
-
       if (stepIndex == 0) {
         keywords = ["Nature", "Urban", "Play", "Ocean", "Animals", "Space"];
       }
-      // else if (stepIndex == 1) {
-      //   keywords = ["귀여운", "멋진", "활기찬", "세련된", "웅장한", "신선한"];
-      // }
-      // else if (stepIndex == 2) {
-      //   keywords = ["빨강", "노랑", "초록", "파랑", "민트", "핑크", "주황", "흰색"];
-      // }
 
       return GridView.builder(
-        shrinkWrap: true, // ✅ 부모 위젯 크기에 맞추기
-        physics: NeverScrollableScrollPhysics(), // ✅ 스크롤 방지 (부모가 스크롤링 할 경우)
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, // ✅ 한 줄에 3개씩 배치
-          crossAxisSpacing: 8.0, // ✅ 버튼 사이의 가로 간격
-          mainAxisSpacing: 8.0, // ✅ 버튼 사이의 세로 간격
-          childAspectRatio: 2.5, // ✅ 버튼 비율 조정 (너비 대비 높이)
+          crossAxisCount: 3,
+          crossAxisSpacing: 8.0,
+          mainAxisSpacing: 8.0,
+          childAspectRatio: 2.5,
         ),
         itemCount: keywords.length,
         itemBuilder: (context, index) {
           return SizedBox(
-            width: 100, // ✅ 버튼 너비 고정
-            height: 40, // ✅ 버튼 높이 고정
+            width: 100,
+            height: 40,
             child: TagToggleButton(
               buttonText: keywords[index],
-              isSelected:
-                  (stepIndex == 0 && data['theme'] == keywords[index]) ||
-                      (stepIndex == 1 && data['mood'] == keywords[index]) ||
-                      (stepIndex == 2 && data['color'] == keywords[index]),
+              isSelected: (stepIndex == 0 && data['theme'] == keywords[index]),
               onTap: () {
                 selectKeyword(keywords[index]);
               },
@@ -261,7 +272,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
               ),
               SizedBox(
                 width: double.infinity,
-                child: buildStepWidget(stepIndex), // ✅ 동적으로 UI 생성
+                child: buildStepWidget(stepIndex),
               ),
               const SizedBox(height: 60),
               SizedBox(
@@ -271,7 +282,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
               ),
               const SizedBox(height: 5),
               Row(
-                spacing: 12,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: DialogStepButton(
@@ -279,6 +290,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                       onPressed: _prevStep,
                     ),
                   ),
+                  SizedBox(width: 12),
                   Expanded(
                     child: DialogStepButton(
                       direction: stepIndex < 1 ? '다음' : '완료',
