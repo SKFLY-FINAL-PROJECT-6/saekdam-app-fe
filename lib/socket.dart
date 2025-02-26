@@ -1,6 +1,23 @@
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+
+
+
 class WebSocketChannelService {
+
+
+
+  // 싱글톤 인스턴스를 생성
+  static final WebSocketChannelService _instance = WebSocketChannelService._internal();
+  WebSocketChannelService._internal();
+  // factory 생성자를 통해 항상 동일한 인스턴스를 반환
+  factory WebSocketChannelService() {
+    return _instance;
+  }
+
   WebSocketChannel? _channel;
+  Stream? _broadcastStream;
+
 
   /// 메시지 전송
 
@@ -18,11 +35,34 @@ class WebSocketChannelService {
     final url = 'ws://saekdam.kro.kr/ws/tasks/$uuid';
     print('Attempting to connect to $url');
     _channel = WebSocketChannel.connect(Uri.parse(url));
-
+    _broadcastStream = _channel!.stream.asBroadcastStream();
     // 채널을 통해 들어오는 메시지 수신
-    _channel?.stream.listen(
+    _broadcastStream!.listen(
           (data) {
         print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+        print('Received message: $data');
+
       },
       onError: (error) {
         print('Channel error: $error');
@@ -49,4 +89,7 @@ class WebSocketChannelService {
       print('Channel already null, nothing to disconnect.');
     }
   }
+  Stream get stream => _broadcastStream ?? Stream.empty();
+
 }
+final wsService = WebSocketChannelService();

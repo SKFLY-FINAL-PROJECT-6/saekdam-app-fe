@@ -246,7 +246,7 @@ class _MaskingScreenState extends State<MaskingScreen> {
               onPressed: _showPromptDialog_ai,
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                child: Text("AI 벽 탐지", style: TextStyle(fontSize: 18, color: Colors.black)),
+                child: Text("벽 자동 탐지", style: TextStyle(fontSize: 18, color: Colors.black)),
               ),
             ),
           ),
