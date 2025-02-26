@@ -6,6 +6,7 @@ import 'package:camera/camera.dart'; // ✅ 여기에 추가!
 import 'dart:io';
 import 'package:fly_ai_1/splash_screen.dart';
 import 'package:fly_ai_1/socket.dart';
+
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
   final Map<String, dynamic> maskData;
@@ -21,7 +22,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   int stepIndex = 0;
   TextEditingController promptController = TextEditingController();
   File? savedImage; // ✅ 저장할 이미지 변수
- // final WebSocketChannelService _wsService = WebSocketChannelService();
+  // final WebSocketChannelService _wsService = WebSocketChannelService();
 
   // data 맵은 widget.maskData에 의존하므로 initState에서 초기화합니다.
   late Map<String, String?> data;
@@ -43,8 +44,8 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   void initState() {
     super.initState();
     data = {
-      "id": null,      // taskid (img uuid)
-      "theme": null,   // 1단계: 메인 테마
+      "id": null, // taskid (img uuid)
+      "theme": null, // 1단계: 메인 테마
       "requirement": null, // 2단계: 추가 요청 사항 (글 프롬프트)
       "x": widget.maskData["x"]?.toString(),
       "y": widget.maskData["y"]?.toString(),
@@ -52,7 +53,6 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
       "h": widget.maskData["height"]?.toString(),
     };
     savedImage = File(widget.imageFile!.path);
-
   }
 
   void _nextStep() {
@@ -106,13 +106,14 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                     print("최종 선택된 키워드: $data");
                     print(response.body);
                     String imgurl = await ApiService.POST_imgurl(data['id']!);
-                    await ApiService.uploadImageToPresignedUrl(imgurl,savedImage!);
+                    await ApiService.uploadImageToPresignedUrl(
+                        imgurl, savedImage!);
                     wsService.connect(data['id']!);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                           builder: (context) => SplashScreen()), // ✅ 홈 화면 이동
-                          (route) => false, // ✅ 이전 화면 모두 제거
+                      (route) => false, // ✅ 이전 화면 모두 제거
                     );
                   },
                   child: Text("디자인 생성하기"),
@@ -161,7 +162,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => HomeScreen()),
-                        (route) => false,
+                    (route) => false,
                   );
                 },
                 child: Text("확인"),

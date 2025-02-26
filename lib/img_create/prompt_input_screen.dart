@@ -21,29 +21,69 @@ class _PromptInputScreenState extends State<PromptInputScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _goToMaskingScreen();
+      _showMaskingSelectDialog(context);
     });
   }
-    void _goToMaskingScreen(){
-      if (widget.image != null){
-        Navigator.push(
 
-          context,
-          MaterialPageRoute(builder: (context) => MaskingScreen(image: widget.image!),
-          ),
+  void _goToMaskingScreen() {
+    if (widget.image != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MaskingScreen(image: widget.image!),
+        ),
+      );
+    }
+  }
+
+  // 마스킹을 할지 말지
+  void _showMaskingSelectDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("벽 영역을 설정해주세요"),
+          content: const Text("자동 선택시 AI가 벽의 위치를 찾아드립니다!"),
+          actions: [
+            // '네' 선택 시
+            // 마스킹 스크린으로 이동
+            TextButton(
+              onPressed: () {
+                _goToMaskingScreen();
+              },
+              child: const Text("수동"),
+            ),
+            // '아니오' 선택 시
+            // 프롬프트 입력 스크린으로 이동
+            TextButton(
+              onPressed: () {
+                final Map<String, dynamic> maskData = {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1,
+                  "height": 1,
+                };
+
+                Navigator.pop(context);
+
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) {
+                    return PromptInputDialog(
+                      imageFile: widget.image,
+                      maskData: maskData,
+                    );
+                  },
+                );
+              },
+              child: const Text("자동"),
+            ),
+          ],
         );
-    }}
-
-
-//  void _showMyDialog() {
-//    showDialog(
-//      barrierDismissible: false,
-//     context: context,
-//      builder: (context) {
-//        return PromptInputDialog(imageFile: widget.image); // ✅ 이미지 전달
-//      },
-//    );
-//  }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
