@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fly_ai_1/api.dart';
+import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/img_create/button/tag_toggle_button_widget.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:camera/camera.dart'; // ✅ 여기에 추가!
@@ -10,9 +11,11 @@ import 'package:fly_ai_1/socket.dart';
 class PromptInputDialog extends StatefulWidget {
   final XFile? imageFile; // ✅ 전달받은 이미지 파일
   final Map<String, dynamic> maskData;
-  const PromptInputDialog(
-      {Key? key, required this.imageFile, required this.maskData})
-      : super(key: key);
+  const PromptInputDialog({
+    Key? key,
+    required this.imageFile,
+    required this.maskData
+  }) : super(key: key);
 
   @override
   State<PromptInputDialog> createState() => _PromptInputDialogState();
@@ -22,9 +25,10 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   int stepIndex = 0;
   TextEditingController promptController = TextEditingController();
   File? savedImage; // ✅ 저장할 이미지 변수
-  // final WebSocketChannelService _wsService = WebSocketChannelService();
 
-  // data 맵은 widget.maskData에 의존하므로 initState에서 초기화합니다.
+  // ✅ FocusNode 추가 (추가 요청사항 입력창이 포커스된 상태를 감지)
+  final FocusNode _promptFocusNode = FocusNode();
+
   late Map<String, String?> data;
 
   static const List<String> stepPromptDescription = [
@@ -37,15 +41,14 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
     '',
   ];
 
-  // 입력받게 될 프롬프트 총 개수
-  final totalPromptSteps = stepPromptTitles.length;
+  final totalPromptSteps = 2; // stepPromptTitles.length
 
   @override
   void initState() {
     super.initState();
     data = {
-      "id": null, // taskid (img uuid)
-      "theme": null, // 1단계: 메인 테마
+      "id": null,        // taskid (img uuid)
+      "theme": null,     // 1단계: 메인 테마
       "requirement": null, // 2단계: 추가 요청 사항 (글 프롬프트)
       "x": widget.maskData["x"]?.toString(),
       "y": widget.maskData["y"]?.toString(),
@@ -53,11 +56,23 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
       "h": widget.maskData["height"]?.toString(),
     };
     savedImage = File(widget.imageFile!.path);
+
+    // 포커스 상태 변화를 감지하면 setState로 UI 갱신
+    _promptFocusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    // FocusNode 해제
+    _promptFocusNode.dispose();
+    super.dispose();
   }
 
   void _nextStep() {
     if (stepIndex < totalPromptSteps - 1) {
-      // ✅ 0단계 (키워드 선택)
+      // 0 -> 1단계
       if (stepIndex == 0 && data['theme'] != null) {
         setState(() {
           stepIndex++;
@@ -66,7 +81,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
         print("키워드를 선택해주세요!");
       }
     } else if (stepIndex == totalPromptSteps - 1) {
-      // ✅ 1단계 (프롬프트 입력)
+      // 마지막 스텝(프롬프트 입력)
       if (promptController.text.isNotEmpty) {
         setState(() {
           data['requirement'] = promptController.text;
@@ -74,11 +89,11 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
 
         print("최종 선택된 키워드: $data");
 
-        // ✅ 다이얼로그 띄우기 (현재 화면에서 요약 확인)
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
+              backgroundColor: Colors.white,
               title: Text("최종 선택 확인"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -94,7 +109,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // ✅ 다이얼로그 닫기 (홈 이동 안 함)
+                    Navigator.pop(context);
                   },
                   child: Text("수정하기"),
                 ),
@@ -105,15 +120,15 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
 
                     print("최종 선택된 키워드: $data");
                     print(response.body);
+
                     String imgurl = await ApiService.POST_imgurl(data['id']!);
-                    await ApiService.uploadImageToPresignedUrl(
-                        imgurl, savedImage!);
+                    await ApiService.uploadImageToPresignedUrl(imgurl, savedImage!);
                     wsService.connect(data['id']!);
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => SplashScreen()), // ✅ 홈 화면 이동
-                      (route) => false, // ✅ 이전 화면 모두 제거
+                      MaterialPageRoute(builder: (context) => SplashScreen()),
+                          (route) => false,
                     );
                   },
                   child: Text("디자인 생성하기"),
@@ -132,7 +147,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
     setState(() {
       if (stepIndex == 0) data['theme'] = keyword;
     });
-    print("현재 선택된 키워드 상태: $data"); // ✅ 현재 상태 출력
+    print("현재 선택된 키워드 상태: $data");
   }
 
   void _prevStep() {
@@ -145,6 +160,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
+            backgroundColor: Colors.white,
             title: Text("알림"),
             content: Text(
               "홈화면으로 돌아가시겠습니까?",
@@ -162,7 +178,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => HomeScreen()),
-                    (route) => false,
+                        (route) => false,
                   );
                 },
                 child: Text("확인"),
@@ -176,18 +192,35 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
 
   Widget buildStepWidget(int stepIndex) {
     if (stepIndex == totalPromptSteps - 1) {
-      // ✅ 2단계 (텍스트 입력)
+      // 2단계 (추가 요청 사항 TextFormField)
+      // 포커스 상태에 따라 다른 색상
+      bool isFocused = _promptFocusNode.hasFocus;
+
       return TextFormField(
+        focusNode: _promptFocusNode, // FocusNode 할당
         controller: promptController,
         decoration: InputDecoration(
           labelText: '추가 요청 사항을 입력해주세요!',
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
+          // 라벨(placeholder) 색상: 비포커스는 짙은 회색, 포커스 시 검정
+          labelStyle: TextStyle(
+            color: isFocused ? Colors.black : Colors.grey[800],
           ),
-          border: OutlineInputBorder(),
+          // 비포커스 테두리
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.grey[800]!, // 진한 회색
+            ),
+          ),
+          // 포커스 테두리
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.black,
+            ),
+          ),
         ),
+        // 실제 입력 텍스트 색상: 비포커스 시 진한 회색, 포커스 시 검정
         style: TextStyle(
-          color: Colors.white,
+          color: isFocused ? Colors.black : Colors.grey[800],
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -200,7 +233,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
         },
       );
     } else {
-      // ✅ 0~2단계 (키워드 선택)
+      // 1단계 (키워드 선택)
       List<String> keywords = [];
       if (stepIndex == 0) {
         keywords = ["Nature", "Urban", "Play", "Ocean", "Animals", "Space"];
@@ -237,7 +270,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 0),
-      backgroundColor: Colors.black.withOpacity(0.7),
+      backgroundColor: Colors.white.withOpacity(0.9),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.9,
@@ -256,17 +289,19 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                   Text(
                     "${stepIndex + 1}/$totalPromptSteps",
                     style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   SizedBox(height: 10),
                   Text(
                     stepPromptDescription[stepIndex],
                     style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   SizedBox(height: 30),
                 ],
@@ -275,13 +310,12 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                 width: double.infinity,
                 child: buildStepWidget(stepIndex),
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: 60),
               SizedBox(
                 width: double.infinity,
-                child: Divider(
-                    color: Color.fromRGBO(229, 231, 235, 1), thickness: 1.5),
+                child: Divider(color: greymain, thickness: 1.5),
               ),
-              const SizedBox(height: 5),
+              SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -308,7 +342,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   }
 }
 
-// ✅ DialogStepButton 추가
+// ✅ DialogStepButton
 class DialogStepButton extends StatelessWidget {
   final String direction;
   final VoidCallback onPressed;
@@ -325,14 +359,14 @@ class DialogStepButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         backgroundColor: (direction == '다음' || direction == '완료')
-            ? Color(0xff364F6B)
+            ? pinkmain
             : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
         side: BorderSide(
           color: (direction == '다음' || direction == '완료')
-              ? Color(0xff364F6B)
+              ? pinkmain
               : Color.fromRGBO(229, 231, 235, 1),
         ),
       ),
