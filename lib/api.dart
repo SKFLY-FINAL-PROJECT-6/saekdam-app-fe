@@ -68,7 +68,40 @@ class ApiService {
       return null;
     }
   }
-  static Future<String> getimgurl(String thumbnailId) async {
+
+
+  static Future<String> GET_imgurl(String thumbnailId) async {
+    final String url = "$baseUrl/storage/accessUrls";
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // 서버가 리스트 형태를 기대하는 경우 단일 값도 리스트에 넣어 전송
+        body: jsonEncode([thumbnailId]),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+        if (jsonResponse.isNotEmpty) {
+          // 리스트의 첫 번째 URL 반환
+          return jsonResponse.first as String;
+        } else {
+          throw Exception("반환된 URL이 없습니다.");
+        }
+      } else {
+        throw Exception("썸네일 요청 실패: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("썸네일 요청 중 오류: $e");
+    }
+  }
+
+
+
+  static Future<String> POST_imgurl(String thumbnailId) async {
     final String url = "$baseUrl/storage/uploadUrls";
 
     try {
@@ -94,6 +127,31 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("썸네일 요청 중 오류: $e");
+    }
+  }
+  static Future<File?> downloadImageFromPresignedUrl(String presignedUrl, {String? filename}) async {
+    try {
+      final response = await http.get(Uri.parse(presignedUrl));
+      if (response.statusCode == 200) {
+        // 내부 저장소 경로 가져오기
+        final String directoryPath = await getLocalStoragePath();
+        // 파일 이름 설정: 인자로 전달되거나, 현재 시간 기반으로 생성
+        final String fileName = filename ?? '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final String filePath = '$directoryPath/$fileName';
+
+        // 파일 생성 후 이미지 데이터를 기록
+        final File file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        print("다운로드 성공: $filePath");
+        return file;
+      } else {
+        print("다운로드 실패: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("다운로드 중 오류: $e");
+      return null;
     }
   }
 
@@ -150,6 +208,12 @@ class ApiService {
       return false;
     }
   }
+
+
+
+
+
+
 
   // 📌 게시글 목록 불러오기 (썸네일 URL 포함)
   static Future<List<Post>> fetchPosts() async {

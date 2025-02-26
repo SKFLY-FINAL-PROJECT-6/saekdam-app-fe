@@ -21,7 +21,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
   int stepIndex = 0;
   TextEditingController promptController = TextEditingController();
   File? savedImage; // ✅ 저장할 이미지 변수
-  final WebSocketChannelService _wsService = WebSocketChannelService();
+ // final WebSocketChannelService _wsService = WebSocketChannelService();
 
   // data 맵은 widget.maskData에 의존하므로 initState에서 초기화합니다.
   late Map<String, String?> data;
@@ -69,7 +69,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
       // ✅ 1단계 (프롬프트 입력)
       if (promptController.text.isNotEmpty) {
         setState(() {
-          data['request'] = promptController.text;
+          data['requirement'] = promptController.text;
         });
 
         print("최종 선택된 키워드: $data");
@@ -86,7 +86,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
                 children: [
                   Text("🎨 테마: ${data['theme']}"),
                   Text(
-                    "📝 추가 요청: ${(data['request'] ?? '').length > 10 ? data['request']!.substring(0, 10) + '...' : data['request'] ?? ''}",
+                    "📝 추가 요청: ${(data['requirement'] ?? '').length > 10 ? data['requirement']!.substring(0, 10) + '...' : data['requirement'] ?? ''}",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -105,9 +105,9 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
 
                     print("최종 선택된 키워드: $data");
                     print(response.body);
-                    String imgurl = await ApiService.getimgurl(data['id']!);
+                    String imgurl = await ApiService.POST_imgurl(data['id']!);
                     await ApiService.uploadImageToPresignedUrl(imgurl,savedImage!);
-                    _wsService.connect(data['id']!);
+                    wsService.connect(data['id']!);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
@@ -194,7 +194,7 @@ class _PromptInputDialogState extends State<PromptInputDialog> {
         maxLines: 9,
         onChanged: (value) {
           setState(() {
-            data['request'] = value;
+            data['requirement'] = value;
           });
         },
       );
