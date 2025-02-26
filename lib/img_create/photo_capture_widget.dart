@@ -11,18 +11,11 @@ class PhotoCaptureWidget extends StatefulWidget {
 }
 
 class _PhotoCaptureWidgetState extends State<PhotoCaptureWidget> {
-  // ImagePicker 초기화
   final ImagePicker picker = ImagePicker();
 
-  //이미지를 가져오는 함수
+  // 이미지를 가져오는 함수
   Future getImage(ImageSource imageSource) async {
-    /*
-    pickedFile에 ImagePicker로 가져온 이미지가 담긴다.
-    imageSource가 ImageSource.camera라면 카메라로 찍은 사진을,
-    imageSource가 ImageSource.gallery라면 갤러리에서 선택한 사진을 가져온다
-    */
     final XFile? pickedFile = await picker.pickImage(source: imageSource);
-    // 가져온 이미지가 null이 아니라면 진입
     if (pickedFile != null) {
       Navigator.push(
         context,
@@ -31,17 +24,46 @@ class _PhotoCaptureWidgetState extends State<PhotoCaptureWidget> {
         ),
       );
     } else {
-      // 📌 사용자가 사진을 찍지 않고 뒤로 갔을 때 → 홈 화면으로 이동
       Navigator.pop(context);
     }
   }
 
+  // 이미지 소스를 선택하는 다이얼로그 표시 함수
+  Future<void> _showImageSourceDialog() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("이미지 선택"),
+          content: const Text("카메라로 찍으시겠습니까? 아니면 갤러리에서 선택하시겠습니까?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // 다이얼로그 닫기
+                getImage(ImageSource.camera);
+              },
+              child: const Text("카메라"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // 다이얼로그 닫기
+                getImage(ImageSource.gallery);
+              },
+              child: const Text("갤러리"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
-    getImage(ImageSource.camera);
+    // 위젯이 완전히 렌더링 된 후 다이얼로그를 표시
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showImageSourceDialog();
+    });
   }
 
   @override
