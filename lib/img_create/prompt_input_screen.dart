@@ -42,6 +42,7 @@ class _PromptInputScreenState extends State<PromptInputScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text("벽 영역을 설정해주세요"),
           content: const Text("자동 선택시 AI가 벽의 위치를 찾아드립니다!"),
           actions: [

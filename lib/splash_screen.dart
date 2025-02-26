@@ -51,6 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     barrierDismissible: false, // 사용자가 외부를 탭해도 닫히지 않음
                     builder: (BuildContext context) {
                       return AlertDialog(
+                        backgroundColor: Colors.white,
                         title: const Text("작업 완료"),
                         content: const Text("결과물을 확인하시겠습니까?"),
                         actions: <Widget>[
@@ -102,16 +103,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
           // GIF 이미지 표시
-          Positioned(
-            top: 180,
-            left: 55,
+          SizedBox(height: screenHeight * 0.4),
+
+          // 이미지 중앙 정렬
+          Center(
             child: Image.asset(
-              "asset/img/splash_screen_색담.gif",
+              "asset/img/splash_screen_찐최종.gif",
               width: 350,
               height: 350,
               fit: BoxFit.cover,

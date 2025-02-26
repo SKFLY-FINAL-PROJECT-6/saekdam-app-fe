@@ -18,7 +18,7 @@ class TagToggleButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Color(0xff364F6B) : Colors.white,
+        backgroundColor: isSelected ? pinkmain : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),

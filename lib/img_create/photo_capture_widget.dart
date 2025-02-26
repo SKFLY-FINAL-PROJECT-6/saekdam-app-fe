@@ -34,6 +34,7 @@ class _PhotoCaptureWidgetState extends State<PhotoCaptureWidget> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text("이미지 선택"),
           content: const Text("카메라로 찍으시겠습니까? 아니면 갤러리에서 선택하시겠습니까?"),
           actions: [
