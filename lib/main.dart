@@ -4,14 +4,11 @@ import 'package:fly_ai_1/img_create/photo_capture_widget.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fly_ai_1/login/welcome.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fly_ai_1/screen/community.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('loggedIn') ?? false;
 
