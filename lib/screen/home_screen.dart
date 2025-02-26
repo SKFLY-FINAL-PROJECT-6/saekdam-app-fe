@@ -225,6 +225,10 @@ class _HomePageState extends State<HomeScreen> {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Community()),
+                      );
                       // Community 전체 보기
                     },
                     icon: const Icon(
@@ -267,7 +271,6 @@ class _HomePageState extends State<HomeScreen> {
             );
           }
           if (index == 2) {
-            // 갤러리 아이콘(인덱스 1) 눌렀을 때 GalleryScreen으로 이동
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => Community()),
