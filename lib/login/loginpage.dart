@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fly_ai_1/login/start.dart';
 import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
@@ -117,69 +115,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   /// 두 번째 코드에서 가져온 구글 로그인 로직
-  Future<UserCredential> _signInWithGoogle() async {
-    setState(() {
-      _isLoading = true;
-    });
 
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        // 사용자가 로그인 창에서 취소한 경우 예외를 발생시킵니다.
-        setState(() {
-          _isLoading = false;
-        });
-        throw Exception("사용자가 Google 로그인 과정을 취소했습니다.");
-      }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      return userCredential;
-    } catch (e) {
-      print('Google Sign-In Error: $e');
-      setState(() {
-        _isLoading = false;
-      });
-      // 에러 발생 시 null 대신 예외를 던집니다.
-      throw Exception("Google Sign-In 중 오류 발생: $e");
-    }
-  }
-
-  /// 구글 로그인 버튼 눌렀을 때 실행되는 함수
-  Future<void> _login() async {
-    UserCredential? userCredential = await _signInWithGoogle();
-    if (userCredential != null) {
-      // 로그인 성공 메시지 띄우기
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('구글 로그인 성공!')),
-      );
-
-      // 약간의 지연을 주고 HomeScreen으로 이동
-      Future.delayed(const Duration(milliseconds: 500), () {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-              (route) => false,
-        );
-      });
-    }else {
-      // 로그인 실패 혹은 취소된 경우 스낵바 메시지 출력
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Google 로그인에 실패했습니다.")),
-      );
-    }
-  }
 
   ///kakao 로그인
   Future<void> _loginKakao() async {
@@ -365,14 +301,7 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: _loginKakao,
                         ),
                         // Google
-                        IconButton(
-                          icon: SvgPicture.asset(
-                            'asset/img/btn_google.svg',
-                            width: 50,
-                            height: 50,
-                          ),
-                          onPressed: _login, // 새로 정의한 함수로 교체
-                        ),
+
                       ],
                     ),
                   ],
