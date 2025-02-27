@@ -227,7 +227,7 @@ class _HomePageState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const GalleryScreen()),
+                        MaterialPageRoute(builder: (context) => Community()),
                       );
                       // Community 전체 보기
                     },
