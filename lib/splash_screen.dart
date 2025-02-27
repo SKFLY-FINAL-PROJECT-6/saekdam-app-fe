@@ -110,6 +110,7 @@ class _SplashScreenState extends State<SplashScreen> {
           Positioned(
             top: 180,
             left: 55,
+            right: 55,
             child: Image.asset(
               "asset/img/splash_screen_색담.gif",
               width: 350,
