@@ -5,6 +5,7 @@ import 'package:fly_ai_1/constant/color.dart';
 import 'package:fly_ai_1/screen/home_screen.dart';
 import 'package:fly_ai_1/socket.dart'; // 여기서 전역 소켓 인스턴스(wsService) 사용한다고 가정
 import 'package:fly_ai_1/result.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -22,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // 소켓 채널이 연결되어 있음. -> 메시지 리스닝 시작
     // wsService는 전역 인스턴스로, 연결은 이미 connect()가 호출됨
     wsService.stream.listen(
-          (data) async{
+          (data) async {
         print('Received message: $data');
 
         try {
@@ -37,7 +38,6 @@ class _SplashScreenState extends State<SplashScreen> {
             case "IN_PROGRESS":
               newText = "작업 진행중...";
               break;
-              //  id 기반으로 팝업창으로 결과물 볼건지 확인하는 팝업띄우고, 채널 연결 끊기.
             case "COMPLETED":
               newText = "작업 완료!";
               // COMPLETED 상태일 때 소켓 연결 해제
@@ -58,12 +58,14 @@ class _SplashScreenState extends State<SplashScreen> {
                           TextButton(
                             onPressed: () {
                               Navigator.pushAndRemoveUntil(
+
+
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => ResultScreen(uuid: id)), // ✅ 홈 화면 이동
+                                  builder: (context) => ResultScreen(uuid: id),
+                                ), // ✅ 홈 화면 이동
                                     (route) => false, // ✅ 이전 화면 모두 제거
                               );
-                              // TODO: 결과물 보기 로직 구현 (예: 결과 화면으로 이동)
                             },
                             child: const Text("결과물 보기"),
                           ),
@@ -75,10 +77,8 @@ class _SplashScreenState extends State<SplashScreen> {
               }
               break;
 
-              break;
             case "FAILED":
               newText = "작업 실패!";
-              // 팝업으로 알수없는 오류로 인해 결과물이 나오지 않았다고 홈으로 보내거나 하는 팝업창 만들면 좋을 것 같음.
               break;
             default:
               newText = "알 수 없는 상태";
@@ -120,7 +120,8 @@ class _SplashScreenState extends State<SplashScreen> {
               fit: BoxFit.cover,
             ).animate(),
           ),
-          // 상태 텍스트 및 홈 화면 이동 버튼 (하단)
+
+          // 상태 텍스트 (하단)
           Positioned(
             bottom: 80,
             left: 0,
@@ -137,35 +138,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // 홈 화면으로 이동
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                          builder: (context) => const HomeScreen()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: pinkmain,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        "홈 화면으로 이동",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // 버튼 제거 후, 필요하다면 SizedBox 등을 삭제하거나 조정
                 ],
               ),
             ),

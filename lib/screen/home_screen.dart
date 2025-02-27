@@ -225,6 +225,10 @@ class _HomePageState extends State<HomeScreen> {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const GalleryScreen()),
+                      );
                       // Community 전체 보기
                     },
                     icon: const Icon(
