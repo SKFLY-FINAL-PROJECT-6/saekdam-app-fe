@@ -45,7 +45,7 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      backgroundColor: Colors.white,
       body: FutureBuilder<Uint8List>(
         future: imageFuture,
         builder: (context, snapshot) {
